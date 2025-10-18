@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>智禾慧农 - 登录/注册</title>
+  <style>
+    :root {
+      --primary-green: #2e7d32;
+      --secondary-green: #4caf50;
+      --accent-green: #a5d6a7;
+      --light-bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('./BG/farmer1.jpg') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 0 20px;
+    }
+    .card {
+      position: relative;
+      background: url('./BG/farmer1.jpg') no-repeat center center;
+      background-size: cover;
+      border-radius: 15px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      padding: 40px 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.3);
+      text-align: center;
+      animation: slideUp 0.6s ease-out;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.7);
+      z-index: 0;
+    }
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      font-size: 3rem;
+      color: var(--primary-green);
+      margin-bottom: 15px;
+    }
+    .title {
+      font-size: 1.8rem;
+      color: var(--primary-green);
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: var(--text-light);
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    .role-selector {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+    .role-option {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--border-color);
+      background-color: var(--light-bg);
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .role-option.active {
+      background-color: var(--accent-green);
+      border-color: var(--secondary-green);
+      color: var(--primary-green);
+    }
+    .role-option:not(:last-child) {
+      margin-right: 10px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(to right, var(--primary-green), var(--secondary-green));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(46, 125, 50, 0.4);
+    }
+    .switch-form {
+      margin-top: 20px;
+      color: var(--text-light);
+    }
+    .switch-form a {
+      color: var(--secondary-green);
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .switch-form a:hover {
+      color: var(--primary-green);
+    }
+    .error-message {
+      color: #f44336;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      text-align: left;
+    }
+    /* 隐藏未激活的表单 */
+    .form-section {
+      display: none;
+    }
+    .form-section.active {
+      display: block;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">
+        <i class="fas fa-seedling"></i>
+      </div>
+      <h1 class="title">智禾慧农</h1>
+      <p class="subtitle">智能农业管理系统</p>
+
+      <!-- 登录表单 -->
+      <div id="loginForm" class="form-section active">
+        <div class="form-group">
+          <label for="loginUsername">用户名</label>
+          <input type="text" id="loginUsername" placeholder="请输入用户名" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入密码" required />
+        </div>
+        <div class="role-selector">
+          <div class="role-option active" data-role="user">农户</div>
+          <div class="role-option" data-role="admin">管理员</div>
+        </div>
+        <button class="submit-btn" onclick="login()">登录</button>
+        <div class="switch-form">
+          还没有账户？ <a onclick="showRegisterForm()">立即注册</a>
+        </div>
+        <div id="loginError" class="error-message"></div>
+      </div>
+
+      <!-- 注册表单 -->
+      <div id="registerForm" class="form-section">
+        <div class="form-group">
+          <label for="regUsername">用户名</label>
+          <input type="text" id="regUsername" placeholder="请输入用户名" required />
+        </div>
+        <div class="form-group">
+          <label for="regPassword">密码</label>
+          <input type="password" id="regPassword" placeholder="请输入密码" required />
+        </div>
+        <div class="form-group">
+          <label for="regConfirmPassword">确认密码</label>
+          <input type="password" id="regConfirmPassword" placeholder="请再次输入密码" required />
+        </div>
+        <button class="submit-btn" onclick="register()">注册</button>
+        <div class="switch-form">
+          已有账户？ <a onclick="showLoginForm()">立即登录</a>
+        </div>
+        <div id="registerError" class="error-message"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 角色选择逻辑
+    document.querySelectorAll('.role-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // 显示登录表单
+    function showLoginForm() {
+        document.getElementById('loginForm').classList.add('active');
+        document.getElementById('registerForm').classList.remove('active');
+        clearMessages();
+    }
+
+    // 显示注册表单
+    function showRegisterForm() {
+        document.getElementById('registerForm').classList.add('active');
+        document.getElementById('loginForm').classList.remove('active');
+        clearMessages();
+    }
+
+    // 清除错误信息
+    function clearMessages() {
+        document.getElementById('loginError').textContent = '';
+        document.getElementById('registerError').textContent = '';
+    }
+
+    // 登录功能
+    async function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const role = document.querySelector('.role-option.active').getAttribute('data-role');
+      const errorElement = document.getElementById('loginError');
+      
+      // 清除之前的错误信息
+      errorElement.textContent = '';
+      errorElement.style.display = 'none';
+      
+      // 前端验证
+      if (!username) {
+        showError('请输入用户名');
+        document.getElementById('loginUsername').focus();
+        return;
+      }
+      if (!password) {
+        showError('请输入密码');
+        document.getElementById('loginPassword').focus();
+        return;
+      }
+
+      // 显示加载状态
+      const loginBtn = document.querySelector('#loginForm .submit-btn');
+      const originalBtnText = loginBtn.textContent;
+      loginBtn.disabled = true;
+      loginBtn.textContent = '登录中...';
+      loginBtn.style.opacity = '0.7';
+      loginBtn.style.cursor = 'wait';
+
+      try {
+        // 发送登录请求到后端
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include', // 确保发送/接收cookies
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            role: role
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        
+        if (!response.ok) {
+          // 处理HTTP错误状态
+          const errorMessage = data.message || 
+                             (response.status === 401 ? '用户名或密码错误' : 
+                             (response.status === 500 ? '服务器内部错误' : '登录失败'));
+          throw new Error(errorMessage);
+        }
+
+          if (data.success) {
+            // 存储用户数据到localStorage
+            localStorage.setItem('currentUser', JSON.stringify({
+              username: data.user.username,
+              role: data.user.role,
+              id: data.user.id
+            }));
+          
+          // 登录成功，显示成功消息并跳转
+          showSuccess('登录成功，正在跳转...');
+          
+          // 短暂延迟后跳转，让用户看到成功消息
+          setTimeout(() => {
+            const targetPage = role === 'admin' ? 'admin' : 'farmer';
+            window.location.href = `/${targetPage}?t=${Date.now()}`;
+          }, 1000);
+        } else {
+          throw new Error(data.message || '登录失败，请重试');
+        }
+      } catch (error) {
+        console.error('登录错误:', error);
+        
+        // 更友好的错误提示
+        let errorMessage = '登录失败，请重试';
+        if (error.message.includes('Failed to fetch') || 
+            error.message.includes('NetworkError')) {
+          errorMessage = '无法连接服务器，请检查网络连接';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        showError(errorMessage);
+      } finally {
+        // 恢复按钮状态
+        loginBtn.disabled = false;
+        loginBtn.textContent = originalBtnText;
+        loginBtn.style.opacity = '1';
+        loginBtn.style.cursor = 'pointer';
+      }
+    }
+    
+    // 显示错误消息
+    function showError(message) {
+      const errorElement = document.getElementById('loginError');
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+      errorElement.style.color = '#f44336';
+      errorElement.style.backgroundColor = '#ffebee';
+      errorElement.style.padding = '10px';
+      errorElement.style.borderRadius = '4px';
+      errorElement.style.marginTop = '15px';
+    }
+    
+    // 显示成功消息
+    function showSuccess(message) {
+      const errorElement = document.getElementById('loginError');
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+      errorElement.style.color = '#4caf50';
+      errorElement.style.backgroundColor = '#e8f5e9';
+      errorElement.style.padding = '10px';
+      errorElement.style.borderRadius = '4px';
+      errorElement.style.marginTop = '15px';
+    }
+
+    // 注册功能 (连接后端API)
+    async function register() {
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+        const role = document.querySelector('.role-option.active').dataset.role; // 获取选择的角色
+        const errorElement = document.getElementById('registerError');
+        
+        // 清除之前的错误信息
+        errorElement.textContent = '';
+
+        // 前端验证
+        if (password !== confirmPassword) {
+            errorElement.textContent = '两次输入的密码不一致！';
+            return;
+        }
+
+        if (password.length < 6) {
+            errorElement.textContent = '密码长度至少为6位！';
+            return;
+        }
+
+        if (!username) {
+            errorElement.textContent = '用户名不能为空！';
+            return;
+        }
+
+        try {
+            // 显示加载状态
+            const registerBtn = document.querySelector('#registerForm .submit-btn');
+            const originalBtnText = registerBtn.textContent;
+            registerBtn.disabled = true;
+            registerBtn.textContent = '注册中...';
+            
+            // 发送注册请求到后端API
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: role
+                })
+            });
+
+            const data = await response.json();
+            
+            // 恢复按钮状态
+            registerBtn.disabled = false;
+            registerBtn.textContent = originalBtnText;
+
+            if (data.success) {
+                // 注册成功，显示成功消息并切换到登录表单
+                alert('注册成功！请登录您的账户。');
+                showLoginForm();
+                
+                // 清空注册表单
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regConfirmPassword').value = '';
+            } else {
+                // 显示服务器返回的错误信息
+                errorElement.textContent = data.message || '注册失败，请重试。';
+            }
+        } catch (error) {
+            console.error('注册错误:', error);
+            errorElement.textContent = '注册失败，请检查网络连接后重试。';
+            
+            // 确保按钮状态恢复
+            const registerBtn = document.querySelector('#registerForm .submit-btn');
+            if (registerBtn) {
+                registerBtn.disabled = false;
+                registerBtn.textContent = '注册';
+            }
+        }
+    }
+
+    // 回车键登录
+    document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
+
+    // 回车键注册
+    document.getElementById('regConfirmPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            register();
+        }
+    });
+
+  </script>
+</body>
+</html>
+
+
+

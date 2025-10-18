@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API测试页面</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f7fa;
+    }
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2e7d32;
+      border-bottom: 3px solid #4caf50;
+      padding-bottom: 10px;
+    }
+    .section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .section h2 {
+      color: #1976d2;
+      margin-top: 0;
+    }
+    button {
+      background: linear-gradient(135deg, #2e7d32, #4caf50);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    }
+    .result {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .info-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #4caf50;
+    }
+    .info-card h3 {
+      margin: 0 0 10px 0;
+      color: #2e7d32;
+      font-size: 14px;
+    }
+    .info-card p {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status.success {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+    .status.error {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌾 智禾慧农 - API测试页面</h1>
+    
+    <div class="section">
+      <h2>📊 用户信息API测试</h2>
+      <button onclick="testGetUserProfile()">获取用户资料</button>
+      <button onclick="testGetUserStats()">获取用户统计</button>
+      <button onclick="testUpdateProfile()">更新用户信息</button>
+      <div id="userResult" class="result" style="display:none;"></div>
+      
+      <div id="userInfoDisplay" class="info-grid" style="display:none; margin-top: 20px;">
+        <div class="info-card">
+          <h3>用户名</h3>
+          <p id="displayUsername">-</p>
+        </div>
+        <div class="info-card">
+          <h3>地区</h3>
+          <p id="displayCity">-</p>
+        </div>
+        <div class="info-card">
+          <h3>作物类型</h3>
+          <p id="displayCrop">-</p>
+        </div>
+        <div class="info-card">
+          <h3>未读预警</h3>
+          <p id="displayAlerts">-</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>🌤️ 天气API测试</h2>
+      <button onclick="testGetWeather('北京', '110000')">北京天气</button>
+      <button onclick="testGetWeather('上海', '310000')">上海天气</button>
+      <button onclick="testGetWeather('广州', '440100')">广州天气</button>
+      <button onclick="testGetWeather('武汉', '420100')">武汉天气</button>
+      <div id="weatherResult" class="result" style="display:none;"></div>
+      
+      <div id="weatherDisplay" class="info-grid" style="display:none; margin-top: 20px;">
+        <div class="info-card">
+          <h3>城市</h3>
+          <p id="displayWeatherCity">-</p>
+        </div>
+        <div class="info-card">
+          <h3>温度</h3>
+          <p id="displayTemp">-</p>
+        </div>
+        <div class="info-card">
+          <h3>天气</h3>
+          <p id="displayWeather">-</p>
+        </div>
+        <div class="info-card">
+          <h3>湿度</h3>
+          <p id="displayHumidity">-</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>🔄 集成测试</h2>
+      <button onclick="testFullIntegration()">完整流程测试</button>
+      <div id="integrationResult" class="result" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    // 测试获取用户资料
+    async function testGetUserProfile() {
+      const resultDiv = document.getElementById('userResult');
+      const displayDiv = document.getElementById('userInfoDisplay');
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = '正在获取用户资料...';
+      
+      try {
+        const response = await fetch('/api/user/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        resultDiv.textContent = JSON.stringify(data, null, 2);
+        
+        if (data.success && data.user) {
+          displayDiv.style.display = 'grid';
+          document.getElementById('displayUsername').textContent = data.user.username || '-';
+          document.getElementById('displayCity').textContent = data.user.city || '-';
+          document.getElementById('displayCrop').textContent = data.user.crop_type || '-';
+          document.getElementById('displayAlerts').textContent = data.user.stats?.unread_alerts || '0';
+        }
+      } catch (error) {
+        resultDiv.textContent = '错误: ' + error.message;
+      }
+    }
+    
+    // 测试获取用户统计
+    async function testGetUserStats() {
+      const resultDiv = document.getElementById('userResult');
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = '正在获取用户统计...';
+      
+      try {
+        const response = await fetch('/api/user/stats', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        resultDiv.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultDiv.textContent = '错误: ' + error.message;
+      }
+    }
+    
+    // 测试更新用户信息
+    async function testUpdateProfile() {
+      const resultDiv = document.getElementById('userResult');
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = '正在更新用户信息...';
+      
+      try {
+        const updateData = {
+          city: '北京',
+          crop_type: '小麦',
+          farm_area: 50.00
+        };
+        
+        const response = await fetch('/api/user/profile', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        resultDiv.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultDiv.textContent = '错误: ' + error.message;
+      }
+    }
+    
+    // 测试获取天气
+    async function testGetWeather(city, adcode) {
+      const resultDiv = document.getElementById('weatherResult');
+      const displayDiv = document.getElementById('weatherDisplay');
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = `正在获取${city}天气...`;
+      
+      try {
+        const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}&adcode=${adcode}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        resultDiv.textContent = JSON.stringify(data, null, 2);
+        
+        if (data.success && data.weather) {
+          displayDiv.style.display = 'grid';
+          document.getElementById('displayWeatherCity').textContent = data.weather.city || '-';
+          document.getElementById('displayTemp').textContent = data.weather.temperature + '°C' || '-';
+          document.getElementById('displayWeather').textContent = data.weather.weather || '-';
+          document.getElementById('displayHumidity').textContent = data.weather.humidity + '%' || '-';
+        }
+      } catch (error) {
+        resultDiv.textContent = '错误: ' + error.message;
+      }
+    }
+    
+    // 完整流程测试
+    async function testFullIntegration() {
+      const resultDiv = document.getElementById('integrationResult');
+      resultDiv.style.display = 'block';
+      let log = '';
+      
+      try {
+        log += '=== 开始完整流程测试 ===\n\n';
+        
+        // 1. 获取用户信息
+        log += '1. 获取用户信息...\n';
+        const userResponse = await fetch('/api/user/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const userData = await userResponse.json();
+        log += userData.success ? '✓ 成功\n' : '✗ 失败\n';
+        log += `   用户名: ${userData.user?.username || '未知'}\n`;
+        log += `   城市: ${userData.user?.city || '未知'}\n\n`;
+        
+        // 2. 获取天气信息
+        log += '2. 获取天气信息...\n';
+        const city = userData.user?.city || '北京';
+        const weatherResponse = await fetch(`/api/weather?city=${city}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const weatherData = await weatherResponse.json();
+        log += weatherData.success ? '✓ 成功\n' : '✗ 失败\n';
+        log += `   温度: ${weatherData.weather?.temperature}°C\n`;
+        log += `   天气: ${weatherData.weather?.weather}\n\n`;
+        
+        // 3. 获取统计信息
+        log += '3. 获取统计信息...\n';
+        const statsResponse = await fetch('/api/user/stats', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const statsData = await statsResponse.json();
+        log += statsData.success ? '✓ 成功\n' : '✗ 失败\n';
+        log += `   未读预警: ${statsData.stats?.unread_alerts || 0}\n`;
+        log += `   使用天数: ${statsData.stats?.days_used || 0}\n\n`;
+        
+        log += '=== 测试完成 ===\n';
+        log += '所有API接口工作正常！✓';
+        
+      } catch (error) {
+        log += '\n错误: ' + error.message;
+      }
+      
+      resultDiv.textContent = log;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试页面</title>
+</head>
+<body>
+    <h1>测试页面</h1>
+    <p>当前用户信息:</p>
+    <div id="userInfo"></div>
+    <button onclick="checkAuth()">检查认证</button>
+    <button onclick="goToLogin()">去登录</button>
+    <button onclick="goToFarmer()">去农户页面</button>
+    
+    <script>
+        function checkAuth() {
+            const userData = localStorage.getItem('currentUser');
+            const token = getToken();
+            
+            document.getElementById('userInfo').innerHTML = `
+                <p>localStorage用户数据: ${userData || '无'}</p>
+                <p>Cookie token: ${token || '无'}</p>
+            `;
+        }
+        
+        function getToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'token') {
+                    return decodeURIComponent(value);
+                }
+            }
+            return null;
+        }
+        
+        function goToLogin() {
+            window.location.href = '/';
+        }
+        
+        function goToFarmer() {
+            window.location.href = '/farmer';
+        }
+        
+        // 页面加载时检查认证
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>农识宝典 - 智禾慧农</title>
+  <style>
+    :root {
+      --primary-blue: #1976d2;
+      --secondary-blue: #42a5f5;
+      --accent-blue: #bbdefb;
+      --light-bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+      /* 新增颜色变量 */
+      --gradient-start: #1976d2;
+      --gradient-end: #64b5f6;
+      --hover-gradient-start: #42a5f5;
+      --hover-gradient-end: #bbdefb;
+      --card-shadow: 0 10px 20px rgba(25, 118, 210, 0.15);
+      --card-hover-shadow: 0 15px 35px rgba(25, 118, 210, 0.25);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: url("BG.jpg") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      padding: 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      transform: rotate(30deg);
+    }
+    
+    .header:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(25, 118, 210, 0.3);
+    }
+    
+    .header h1 {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      z-index: 1;
+    }
+    
+    .header h1 i {
+      margin-right: 12px;
+      font-size: 1.5rem;
+    }
+    
+    .back-home-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 1;
+    }
+    
+    .back-home-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    }
+    
+    .module-title {
+      color: var(--primary-blue);
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .module-description {
+      color: var(--text-light);
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+    }
+    
+    .almanac-container {
+      background-color: var(--card-bg);
+      padding: 35px;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      min-height: 500px;
+      animation: fadeIn 0.6s ease-out;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .almanac-header {
+      margin-bottom: 30px;
+    }
+    
+    .almanac-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      gap: 15px;
+      width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+      .almanac-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .view-controls {
+        margin-top: 15px;
+        justify-content: center;
+      }
+    }
+    
+    .search-box {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .search-box input {
+      padding: 12px 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      min-width: 250px;
+      width: 100%;
+      max-width: 400px;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    @media (max-width: 768px) {
+      .search-box {
+        width: 100%;
+      }
+      
+      .search-box input {
+        min-width: auto;
+        width: 100%;
+      }
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--secondary-blue);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .search-box button {
+      padding: 12px 20px;
+      background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(25, 118, 210, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .search-box button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(25, 118, 210, 0.4);
+      background: linear-gradient(to right, var(--hover-gradient-start), var(--hover-gradient-end));
+    }
+    
+    .search-box button:active {
+      transform: translateY(-1px);
+    }
+    
+    .view-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .view-btn {
+      background: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+    
+    .view-btn.active {
+      background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border-color: var(--gradient-start);
+      box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+    }
+    
+    .view-btn:hover:not(.active) {
+      background: var(--card-bg);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    
+    .almanac-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+      flex: 1;
+    }
+    
+    @media (max-width: 992px) {
+      .almanac-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .almanac-sidebar {
+        order: 2;
+      }
+      
+      .almanac-main {
+        order: 1;
+      }
+    }
+    
+    .almanac-sidebar {
+      background: linear-gradient(135deg, var(--light-bg), #e3f2fd);
+      border-radius: 15px;
+      padding: 25px;
+      height: fit-content;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .almanac-sidebar:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar-section {
+      margin-bottom: 30px;
+    }
+    
+    .sidebar-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .sidebar-section h3 {
+      color: var(--primary-blue);
+      margin-top: 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent-blue);
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .category-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .category-list li {
+      margin-bottom: 10px;
+    }
+    
+    .category-list a {
+      color: var(--text-dark);
+      text-decoration: none;
+      padding: 12px 15px;
+      border-radius: 8px;
+      display: block;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .category-list a:hover, .category-list a.active {
+      background-color: var(--card-bg);
+      color: var(--primary-blue);
+      font-weight: 600;
+      transform: translateX(5px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    
+    .category-list a i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tag {
+      background: linear-gradient(135deg, var(--card-bg), #e3f2fd);
+      color: var(--primary-blue);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      border: 1px solid var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tag:hover {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(25, 118, 210, 0.3);
+      border-color: var(--gradient-start);
+    }
+
+    .tag i {
+      font-size: 0.8rem;
+    }
+    
+    .almanac-main {
+      background-color: var(--light-bg);
+      border-radius: 15px;
+      padding: 25px;
+    }
+    
+    .knowledge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .knowledge-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .knowledge-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .knowledge-item {
+      background: linear-gradient(135deg, var(--card-bg), #f8fbff);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .knowledge-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+      transform: scaleY(0);
+      transition: var(--transition);
+    }
+
+    .knowledge-item:hover {
+      transform: translateY(-8px) translateX(5px);
+      box-shadow: var(--card-hover-shadow);
+      border-color: var(--accent-blue);
+    }
+    
+    .knowledge-item:hover::before {
+      transform: scaleY(1);
+    }
+
+    .knowledge-item h3 {
+      color: var(--primary-blue);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .knowledge-item p {
+      color: var(--text-light);
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    .category-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent-blue), #e3f2fd);
+      color: var(--primary-blue);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: var(--transition);
+      border: 1px solid rgba(25, 118, 210, 0.2);
+    }
+    
+    .knowledge-item:hover .category-badge {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(25, 118, 210, 0.2);
+    }
+    
+    .knowledge-detail {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+      padding: 35px;
+      box-shadow: var(--shadow);
+      animation: slideIn 0.5s ease-out;
+    }
+    
+    .detail-header {
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-header h2 {
+      color: var(--primary-blue);
+      margin-bottom: 15px;
+      line-height: 1.4;
+      font-size: 1.8rem;
+    }
+    
+    .detail-meta {
+      display: flex;
+      gap: 20px;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    
+    .detail-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .detail-content {
+      line-height: 1.8;
+      font-size: 1.05rem;
+    }
+    
+    .detail-content h3 {
+      color: var(--primary-blue);
+      margin: 25px 0 15px;
+      padding-left: 10px;
+      border-left: 4px solid var(--accent-blue);
+    }
+    
+    .detail-content ul, .detail-content ol {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+    
+    .detail-content li {
+      margin-bottom: 10px;
+      padding-left: 10px;
+    }
+    
+    .detail-content ul li {
+      list-style-type: disc;
+    }
+    
+    .detail-content ol li {
+      list-style-type: decimal;
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--light-bg), #e3f2fd);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 25px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    .back-btn:hover {
+      background: linear-gradient(135deg, var(--card-bg), #bbdefb);
+      transform: translateX(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+      background: linear-gradient(135deg, var(--light-bg), #e3f2fd);
+      border-radius: 15px;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+      color: var(--primary-blue);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+      background: linear-gradient(135deg, var(--light-bg), #e3f2fd);
+      border-radius: 15px;
+    }
+    
+    .loading i {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      animation: spin 1s linear infinite;
+      color: var(--primary-blue);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @media (max-width: 768px) {
+      .almanac-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .search-box input {
+        min-width: auto;
+        flex: 1;
+      }
+      
+      .almanac-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .knowledge-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .detail-meta {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .almanac-container {
+        padding: 20px;
+      }
+      
+      .search-box {
+        flex-direction: column;
+      }
+      
+      .tag-cloud {
+        justify-content: center;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-seedling"></i> 农识宝典</h1>
+      <a href="../" class="back-home-btn"><i class="fas fa-home"></i> 返回首页</a>
+    </div>
+    
+    <div class="almanac-container">
+      <div class="almanac-header">
+        <h2 class="module-title"><i class="fas fa-book"></i> 农业知识库</h2>
+        <p class="module-description">汇集各类农作物种植技术、病虫害防治方法和现代农业管理知识</p>
+        
+        <div class="almanac-actions">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索农业知识..." />
+            <button id="searchBtn"><i class="fas fa-search"></i> 搜索</button>
+          </div>
+          <div class="view-controls">
+            <button class="view-btn active" id="gridViewBtn" title="网格视图"><i class="fas fa-th-large"></i></button>
+            <button class="view-btn" id="listViewBtn" title="列表视图"><i class="fas fa-list"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="almanac-layout">
+        <div class="almanac-sidebar">
+          <div class="sidebar-section">
+            <h3><i class="fas fa-filter"></i> 知识分类</h3>
+            <ul class="category-list" id="categoryList">
+              <!-- 分类列表将通过JavaScript动态生成 -->
+            </ul>
+          </div>
+          
+          <div class="sidebar-section">
+            <h3><i class="fas fa-fire"></i> 热门标签</h3>
+            <div class="tag-cloud" id="tagCloud">
+              <!-- 标签云将通过JavaScript动态生成 -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="almanac-main">
+          <div class="knowledge-grid" id="knowledgeGrid">
+            <!-- 知识卡片将通过JavaScript动态生成 -->
+          </div>
+          <div class="knowledge-list" id="knowledgeList" style="display: none;">
+            <!-- 知识列表将通过JavaScript动态生成 -->
+          </div>
+          <div class="knowledge-detail" id="knowledgeDetail" style="display: none;">
+            <!-- 知识详情将通过JavaScript动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 知识数据
+    const knowledgeData = [
+      {
+        id: 1,
+        title: "水稻种植技术",
+        category: "种植技术",
+        summary: "详细介绍水稻从选种到收获的全过程技术要点",
+        content: `
+          <h3>水稻种植技术详解</h3>
+          <p>水稻是世界上最重要的粮食作物之一，全球一半以上的人口以稻米为主食。掌握科学的水稻种植技术对提高产量和品质至关重要。</p>
+          
+          <h3>选种与育苗</h3>
+          <p>选择适合当地气候和土壤条件的优质品种是水稻种植成功的第一步。优良品种应具备高产、抗病、抗倒伏等特性。育苗时要确保苗床土壤疏松肥沃，播种密度适宜，及时进行苗期管理。</p>
+          
+          <h3>整地与插秧</h3>
+          <p>整地要做到"平、松、软、糊"，即田面平整、土壤疏松、土块细碎、泥浆适度。插秧时要根据品种特性和地力确定合理密度，一般行距25-30cm，株距15-20cm。</p>
+          
+          <h3>水肥管理</h3>
+          <p>水稻需水量大，要科学管水，做到"浅水插秧、深水返青、薄水分蘖、够苗晒田、深水孕穗、浅水抽穗、湿润灌浆、落干收获"。施肥要氮磷钾配合，基肥足、追肥早、穗肥巧。</p>
+          
+          <h3>病虫害防治</h3>
+          <p>常见病害有稻瘟病、纹枯病、白叶枯病等，虫害主要有稻飞虱、稻纵卷叶螟、二化螟等。要坚持"预防为主，综合防治"的方针，采用农业防治、生物防治和化学防治相结合的方法。</p>
+        `
+      },
+      {
+        id: 2,
+        title: "小麦病虫害防治",
+        category: "病虫害防治",
+        summary: "小麦常见病虫害识别与防治方法",
+        content: `
+          <h3>小麦病虫害综合防治技术</h3>
+          <p>小麦是我国主要粮食作物之一，在生长过程中常受到多种病虫害的威胁，严重影响产量和品质。科学识别和有效防治病虫害是确保小麦高产稳产的关键。</p>
+          
+          <h3>主要病害及防治</h3>
+          <p><strong>1. 小麦条锈病：</strong>主要危害叶片，形成条状锈斑。防治方法：选用抗病品种，及时喷施三唑酮、戊唑醇等杀菌剂。</p>
+          <p><strong>2. 小麦赤霉病：</strong>主要危害穗部，造成穗腐。防治方法：抽穗扬花期喷施多菌灵、咪鲜胺等药剂。</p>
+          <p><strong>3. 小麦白粉病：</strong>叶片表面出现白粉状霉层。防治方法：合理密植，增施磷钾肥，发病初期喷施粉锈宁。</p>
+          
+          <h3>主要虫害及防治</h3>
+          <p><strong>1. 麦蚜：</strong>吸食植物汁液，传播病毒病。防治方法：利用天敌控制，必要时喷施吡虫啉、啶虫脒。</p>
+          <p><strong>2. 麦蜘蛛：</strong>刺吸叶片汁液，造成叶片黄化。防治方法：清除田间杂草，干旱时及时浇水，药剂防治可用阿维菌素。</p>
+          <p><strong>3. 地下害虫：</strong>包括蛴螬、金针虫等，危害根部。防治方法：播前土壤处理，使用毒土、毒饵防治。</p>
+          
+          <h3>综合防治策略</h3>
+          <p>坚持"预防为主，综合防治"的植保方针，以农业防治为基础，优先采用生物防治和物理防治，科学合理使用化学防治，达到安全、有效、经济的目的。</p>
+        `
+      },
+      {
+        id: 3,
+        title: "玉米科学施肥",
+        category: "土壤肥料",
+        summary: "玉米不同生期的科学施肥技术",
+        content: `
+          <h3>玉米科学施肥技术</h3>
+          <p>科学施肥是玉米获得高产优质的关键技术措施之一。根据玉米不同生育期的需肥特点和土壤供肥能力，合理施用肥料，可以显著提高产量和品质，同时保护环境。</p>
+          
+          <h3>玉米需肥特点</h3>
+          <p>玉米对氮、磷、钾的需求量较大，一般每生产100kg籽粒需吸收氮2.5-3.0kg、磷1.0-1.2kg、钾2.0-2.7kg。不同生育期对养分的需求不同：苗期需肥较少，拔节至抽雄期需求量最大，灌浆期需求量逐渐减少。</p>
+          
+          <h3>施肥原则</h3>
+          <ol>
+            <li>有机肥与无机肥相结合</li>
+            <li>大量元素与中微量元素相结合</li>
+            <li>基肥与追肥相结合</li>
+            <li>深施与浅施相结合</li>
+            <li>因地制宜，因土施肥</li>
+          </ol>
+          
+          <h3>施肥技术</h3>
+          <p><strong>基肥：</strong>以有机肥为主，配合适量化肥。一般亩施优质农家肥2000-3000kg，过磷酸钙25-30kg，硫酸钾10-15kg。</p>
+          <p><strong>种肥：</strong>播种时施用，以速效性化肥为主。一般亩施磷酸二铵5-8kg，硫酸钾3-5kg。</p>
+          <p><strong>追肥：</strong>分两次施用，第一次在拔节期，亩施尿素15-20kg；第二次在大喇叭口期，亩施尿素20-25kg。</p>
+          
+          <h3>注意事项</h3>
+          <ul>
+            <li>根据土壤养分含量和目标产量确定施肥量</li>
+            <li>深施肥料，提高利用率</li>
+            <li>注意施肥时期，避免过早或过晚</li>
+            <li>结合灌水，提高肥效</li>
+            <li>防止肥料烧苗，种肥隔离</li>
+          </ul>
+        `
+      },
+      {
+        id: 4,
+        title: "节水灌溉技术",
+        category: "节水灌溉",
+        summary: "现代农业中的节水灌溉方法与应用",
+        content: `
+          <h3>现代农业节水灌溉技术</h3>
+          <p>水资源短缺已成为制约农业可持续发展的重要因素。发展节水灌溉技术，提高水资源利用效率，是保障国家粮食安全和水资源安全的必然要求。</p>
+          
+          <h3>主要节水灌溉技术</h3>
+          <p><strong>1. 滴灌技术：</strong>通过管道系统将水直接滴入作物根部附近土壤。优点是节水效果好（比地面灌溉省水30-50%），灌水均匀，便于自动化管理。适用于果树、蔬菜、棉花等作物。</p>
+          <p><strong>2. 喷灌技术：</strong>通过喷头将水喷洒到空中形成水滴进行灌溉。优点是适应性强，省水省工，可结合施肥。适用于大田作物、蔬菜、果树等。</p>
+          <p><strong>3. 微喷灌技术：</strong>介于喷灌和滴灌之间，水滴较细，喷洒范围较小。适用于蔬菜、花卉、苗圃等。</p>
+          <p><strong>4. 渗灌技术：</strong>通过地下管道或渗水材料将水渗入作物根区。优点是减少蒸发损失，不破坏土壤结构。适用于果园、林木等。</p>
+          
+          <h3>技术要点</h3>
+          <ol>
+            <li>根据作物种类、土壤性质、地形条件选择适宜的灌溉方式</li>
+            <li>合理设计灌水定额和灌水周期</li>
+            <li>加强水质管理，防止管道堵塞</li>
+            <li>定期维护设备，确保系统正常运行</li>
+            <li>结合土壤墒情监测，实现精准灌溉</li>
+          </ol>
+          
+          <h3>发展趋势</h3>
+          <p>未来节水灌溉技术将向智能化、精准化、自动化方向发展，结合物联网、大数据、人工智能等技术，实现按需供水、精准施肥，进一步提高水资源利用效率。</p>
+        `
+      },
+      {
+        id: 5,
+        title: "有机农业实践",
+        category: "现代农业",
+        summary: "有机农业的理念、技术与市场前景",
+        content: `
+          <h3>有机农业发展与实践</h3>
+          <p>有机农业是一种遵循自然规律和生态学原理，不使用化学合成的肥料、农药、生长调节剂和饲料添加剂的农业生产体系。它强调生态平衡、生物多样性保护和可持续发展。</p>
+          
+          <h3>核理念</h3>
+          <ul>
+            <li>健康：生产健康食品，维护人类和动物健康</li>
+            <li>生态：建立可持续的农业生态系统</li>
+            <li>公平：确保所有参与者的公平关系</li>
+            <li>关爱：以负责任的态度管理农业生产和加工过程</li>
+          </ul>
+          
+          <h3>关键技术</h3>
+          <p><strong>土壤管理：</strong>通过施用有机肥、秸秆还田、绿肥种植等措施培肥地力，改善土壤结构。</p>
+          <p><strong>病虫害防治：</strong>采用生物防治、物理防治、农业防治等综合措施，减少病虫害发生。</p>
+          <p><strong>品种选择：</strong>选用适应当地生态环境的优良品种，充分发挥品种的抗逆性。</p>
+          <p><strong>轮作制度：</strong>合理的作物轮作可以改善土壤环境，减少病虫害，提高土地利用率。</p>
+          
+          <h3>认证与管理</h3>
+          <p>有机农产品需要通过权威机构的认证，获得有机产品认证证书。认证过程包括申请、检查、评估、颁证等环节，要求建立完整的质量管理体系和生产记录档案。</p>
+          
+          <h3>市场前景</h3>
+          <p>随着人们健康意识的提高和对食品安全的关注，有机农产品市场需求不断增长。发展有机农业不仅可以提高农产品附加值，还能保护生态环境，促进农业可持续发展。</p>
+        `
+      },
+      {
+        id: 6,
+        title: "温室大棚管理",
+        category: "现代农业",
+        summary: "设施农业中温室大棚的科学管理技术",
+        content: `
+          <h3>温室大棚科学管理技术</h3>
+          <p>温室大棚是现代农业的重要组成部分，通过人工调控环境条件，实现作物的周年生产和高产高效。科学的温室管理技术对提高设施农业效益具有重要意义。</p>
+          
+          <h3>环境调控</h3>
+          <p><strong>温度管理：</strong>根据不同作物的生长需求，合理调控棚内温度。通过通风、遮阳、加温等措施维持适宜的温度环境。</p>
+          <p><strong>湿度控制：</strong>适宜的空气湿度有利于作物生长，一般控制在60-80%。通过通风、覆盖地膜、滴灌等措施调节湿度。</p>
+          <p><strong>光照调节：</strong>保证充足的光照是作物正常生长的基础。通过清洁棚膜、合理密植、人工补光等措施改善光照条件。</p>
+          <p><strong>气体调节：</strong>及时通风换气，补充CO₂，排除有害气体，维持棚内气体平衡。</p>
+          
+          <h3>栽培管理</h3>
+          <p><strong>品种选择：</strong>选择适合设施栽培的优良品种，具有早熟、抗病、优质等特性。</p>
+          <p><strong>育苗技术：</strong>采用穴盘育苗、嫁接育苗等先进技术，培育壮苗。</p>
+          <p><strong>植株调整：</strong>及时进行整枝、打杈、摘心、疏花疏果等操作，调节营养分配。</p>
+          <p><strong>水肥一体化：</strong>采用滴灌、微喷等节水灌溉技术，结合测土配方施肥，实现精准水肥管理。</p>
+          
+          <h3>病虫害防治</h3>
+          <p>坚持"预防为主，综合防治"的方针，优先采用农业防治、物理防治、生物防治等绿色防控技术，科学合理使用化学农药，确保农产品质量安全。</p>
+        `
+      },
+      {
+        id: 7,
+        title: "收获与储藏技术",
+        category: "收获储藏",
+        summary: "主要农作物的科学收获与储藏方法",
+        content: `
+          <h3>农作物收获与储藏技术</h3>
+          <p>科学的收获与储藏技术是确保农产品产量和品质、减少产后损失的重要环节。掌握正确的收获时机和储藏方法，对提高农业经济效益具有重要意义。</p>
+          
+          <h3>收获技术</h3>
+          <p><strong>收获时期：</strong>根据作物种类和用途确定适宜的收获期。一般在籽粒充分成熟、含水量适宜时收获。</p>
+          <p><strong>收获方法：</strong>包括人工收获和机械收获。机械收获效率高，但要求作物成熟一致，田间条件适宜。</p>
+          <p><strong>收获质量：</strong>要求损失率低、破碎率小、杂质少、含水量适宜。</p>
+          
+          <h3>干燥技术</h3>
+          <p><strong>自然干燥：</strong>利用阳光和风力进行干燥，成本低但受天气影响大。</p>
+          <p><strong>人工干燥：</strong>采用烘干设备进行干燥，效率高、质量好，但成本较高。</p>
+          <p><strong>干燥标准：</strong>不同作物有不同的安全储藏含水量标准，如稻谷13.5%、小麦12.5%、玉米14%。</p>
+          
+          <h3>储藏技术</h3>
+          <p><strong>储藏条件：</strong>保持低温、干燥、通风、密闭的环境条件，防止害虫和微生物侵害。</p>
+          <p><strong>储藏方法：</strong>包括常规储藏、低温储藏、气调储藏、化学储藏等。</p>
+          <p><strong>储藏管理：</strong>定期检查粮温、水分、虫霉情况，及时处理异常情况。</p>
+          
+          <h3>注意事项</h3>
+          <ul>
+            <li>收获前适当晾晒，降低籽粒含水量</li>
+            <li>避免在雨天或露水未干时收获</li>
+            <li>及时干燥，防止霉变发芽</li>
+            <li>清理杂质，提高储藏稳定性</li>
+            <li>分类储藏，避免交叉污染</li>
+          </ul>
+        `
+      }
+    ];
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化视图
+      initializeView();
+      
+      // 绑定事件监听器
+      bindEventListeners();
+      
+      // 显示知识网格
+      displayKnowledgeGrid();
+    });
+
+    // 初始化视图
+    function initializeView() {
+      // 设置页面标题
+      document.title = "农识宝典 - 智禾慧农";
+      
+      // 创建分类列表
+      createCategoryList();
+      
+      // 创建标签云
+      createTagCloud();
+    }
+
+    // 创建分类列表
+    function createCategoryList() {
+      const categoryList = document.getElementById('categoryList');
+      if (!categoryList) return;
+      
+      // 获取所有分类
+      const categories = [...new Set(knowledgeData.map(item => item.category))];
+      
+      // 添加"全部"分类
+      const allItem = document.createElement('li');
+      allItem.innerHTML = '<a href="#" class="active" data-category="all"><i class="fas fa-list"></i> 全部</a>';
+      categoryList.appendChild(allItem);
+      
+      // 添加其他分类
+      categories.forEach(category => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="#" data-category="${category}"><i class="fas fa-tag"></i> ${category}</a>`;
+        categoryList.appendChild(li);
+      });
+    }
+
+    // 创建标签云
+    function createTagCloud() {
+      const tagCloud = document.getElementById('tagCloud');
+      if (!tagCloud) return;
+      
+      // 定义热门标签
+      const tags = ['水稻', '小麦', '玉米', '病虫害', '施肥', '灌溉', '有机农业', '温室大棚', '收获', '储藏'];
+      
+      // 创建标签元素
+      tags.forEach(tag => {
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.innerHTML = `<i class="fas fa-hashtag"></i> ${tag}`;
+        span.dataset.tag = tag;
+        tagCloud.appendChild(span);
+      });
+    }
+
+    // 绑定事件监听器
+    function bindEventListeners() {
+      // 搜索功能
+      const searchInput = document.getElementById('searchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      
+      if (searchInput && searchBtn) {
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            performSearch();
+          }
+        });
+      }
+      
+      // 视图切换
+      const gridViewBtn = document.getElementById('gridViewBtn');
+      const listViewBtn = document.getElementById('listViewBtn');
+      
+      if (gridViewBtn && listViewBtn) {
+        gridViewBtn.addEventListener('click', function() {
+          switchView('grid');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+          switchView('list');
+        });
+      }
+      
+      // 分类筛选
+      const categoryList = document.getElementById('categoryList');
+      if (categoryList) {
+        categoryList.addEventListener('click', function(e) {
+          if (e.target.tagName === 'A') {
+            e.preventDefault();
+            filterByCategory(e.target.dataset.category);
+            
+            // 更新活动状态
+            document.querySelectorAll('#categoryList a').forEach(a => {
+              a.classList.remove('active');
+            });
+            e.target.classList.add('active');
+          }
+        });
+      }
+      
+      // 标签筛选
+      const tagCloud = document.getElementById('tagCloud');
+      if (tagCloud) {
+        tagCloud.addEventListener('click', function(e) {
+          if (e.target.classList.contains('tag') || e.target.parentElement.classList.contains('tag')) {
+            const tag = e.target.dataset.tag || e.target.parentElement.dataset.tag;
+            filterByTag(tag);
+          }
+        });
+      }
+      
+      // 返回按钮
+      const backBtn = document.getElementById('backBtn');
+      if (backBtn) {
+        backBtn.addEventListener('click', showKnowledgeGrid);
+      }
+    }
+
+    // 执行搜索
+    function performSearch() {
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (!searchTerm) return;
+      
+      const filteredData = knowledgeData.filter(item => 
+        item.title.toLowerCase().includes(searchTerm) || 
+        item.summary.toLowerCase().includes(searchTerm) ||
+        item.content.toLowerCase().includes(searchTerm) ||
+        item.category.toLowerCase().includes(searchTerm)
+      );
+      
+      displayKnowledgeGrid(filteredData);
+    }
+
+    // 切换视图
+    function switchView(view) {
+      const gridViewBtn = document.getElementById('gridViewBtn');
+      const listViewBtn = document.getElementById('listViewBtn');
+      const knowledgeGrid = document.getElementById('knowledgeGrid');
+      const knowledgeList = document.getElementById('knowledgeList');
+      
+      if (view === 'grid') {
+        gridViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        knowledgeGrid.style.display = 'grid';
+        knowledgeList.style.display = 'none';
+      } else {
+        listViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+        knowledgeGrid.style.display = 'none';
+        knowledgeList.style.display = 'block';
+      }
+    }
+
+    // 按分类筛选
+    function filterByCategory(category) {
+      if (category === 'all') {
+        displayKnowledgeGrid();
+      } else {
+        const filteredData = knowledgeData.filter(item => item.category === category);
+        displayKnowledgeGrid(filteredData);
+      }
+    }
+
+    // 按标签筛选
+    function filterByTag(tag) {
+      const filteredData = knowledgeData.filter(item => 
+        item.title.includes(tag) || 
+        item.summary.includes(tag) ||
+        item.content.includes(tag)
+      );
+      displayKnowledgeGrid(filteredData);
+    }
+
+    // 显示知识网格
+    function displayKnowledgeGrid(data = knowledgeData) {
+      const knowledgeGrid = document.getElementById('knowledgeGrid');
+      if (!knowledgeGrid) return;
+      
+      // 清空现有内容
+      knowledgeGrid.innerHTML = '';
+      
+      // 如果没有数据，显示空状态
+      if (data.length === 0) {
+        knowledgeGrid.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>未找到相关知识</h3>
+            <p>请尝试其他关键词搜索</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 创建知识卡片
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'knowledge-item';
+        card.innerHTML = `
+          <h3><i class="fas fa-book-open"></i> ${item.title}</h3>
+          <p>${item.summary}</p>
+          <span class="category-badge">${item.category}</span>
+        `;
+        card.addEventListener('click', () => showKnowledgeDetail(item.id));
+        knowledgeGrid.appendChild(card);
+      });
+    }
+
+    // 显示知识详情
+    function showKnowledgeDetail(id) {
+      const item = knowledgeData.find(k => k.id === id);
+      if (!item) return;
+      
+      const knowledgeDetail = document.getElementById('knowledgeDetail');
+      const knowledgeGrid = document.getElementById('knowledgeGrid');
+      const knowledgeList = document.getElementById('knowledgeList');
+      
+      if (knowledgeDetail) {
+        knowledgeDetail.innerHTML = `
+          <button class="back-btn" id="backBtn">
+            <i class="fas fa-arrow-left"></i> 返回
+          </button>
+          <div class="detail-header">
+            <h2>${item.title}</h2>
+            <div class="detail-meta">
+              <span><i class="fas fa-tag"></i> ${item.category}</span>
+              <span><i class="fas fa-clock"></i> 2024年5月</span>
+              <span><i class="fas fa-user"></i> 农业专家</span>
+            </div>
+          </div>
+          <div class="detail-content">
+            ${item.content}
+          </div>
+        `;
+        
+        // 隐藏其他视图
+        knowledgeGrid.style.display = 'none';
+        knowledgeList.style.display = 'none';
+        knowledgeDetail.style.display = 'block';
+        
+        // 重新绑定返回按钮事件
+        document.getElementById('backBtn').addEventListener('click', showKnowledgeGrid);
+      }
+    }
+
+    // 显示知识网格（返回到主视图）
+    function showKnowledgeGrid() {
+      const knowledgeDetail = document.getElementById('knowledgeDetail');
+      const knowledgeGrid = document.getElementById('knowledgeGrid');
+      
+      if (knowledgeDetail && knowledgeGrid) {
+        knowledgeDetail.style.display = 'none';
+        knowledgeGrid.style.display = 'grid';
+      }
+    }
+  </script>
+</body>
+</html>

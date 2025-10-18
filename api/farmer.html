@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>农户中心 - 智禾慧农</title>
+  <style>
+    :root {
+       background: url("BG/BG1.jpg");
+      --primary-color: #4caf50;
+      --secondary-color: #2e7d32;
+      --accent-color: #a5d6a7;
+      --light-bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: url("BG.jpg") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      color: white;
+      padding: 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+    }
+    .header h1 i {
+      margin-right: 12px;
+    }
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .dashboard-title {
+      color: var(--secondary-color);
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 10px;
+    }
+
+    .dashboard-description {
+      color: var(--text-light);
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    /* 确保前三个模块在第一行 */
+    .module-card:nth-child(1),
+    .module-card:nth-child(2),
+    .module-card:nth-child(3) {
+      grid-row: 1;
+    }
+
+    /* 确保后两个模块在第二行 */
+    .module-card:nth-child(4),
+    .module-card:nth-child(5) {
+      grid-row: 2;
+    }
+
+    /* 调整第四和第五个模块的位置，使其居中 */
+    .module-card:nth-child(4) {
+      grid-column: 1;
+    }
+
+    .module-card:nth-child(5) {
+      grid-column: 3;
+    }
+
+    /* 在中等屏幕上调整为上三下二布局 */
+    @media (max-width: 1200px) and (min-width: 769px) {
+      .modules-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* 在更小的屏幕上调整为上二下三布局 */
+    @media (max-width: 768px) {
+      .modules-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .module-card:nth-child(1),
+      .module-card:nth-child(2) {
+        grid-row: 1;
+      }
+
+      .module-card:nth-child(3),
+      .module-card:nth-child(4),
+      .module-card:nth-child(5) {
+        grid-row: 2;
+      }
+
+      .module-card:nth-child(3) {
+        grid-column: 1;
+      }
+
+      .module-card:nth-child(4) {
+        grid-column: 2;
+      }
+
+      .module-card:nth-child(5) {
+        grid-column: 1 / span 2;
+        justify-self: center;
+        max-width: 80%;
+        margin-top: 20px;
+      }
+    }
+
+    .module-card {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+      transition: var(--transition);
+      cursor: pointer;
+      border: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+      border-color: var(--primary-color);
+    }
+
+    .module-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+
+    .module-title {
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+    }
+
+    .module-description {
+      color: var(--text-light);
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .enter-btn {
+      display: inline-block;
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .enter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .welcome-section {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(165, 214, 167, 0.4));
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 6px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .welcome-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(76, 175, 80, 0.1), transparent);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .welcome-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-stats {
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    .weather-info {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 225, 0.9));
+      border-radius: 15px;
+      padding: 20px;
+      min-width: 220px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+      border: 2px solid rgba(255, 152, 0, 0.2);
+      transition: var(--transition);
+    }
+    
+    .weather-info:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(255, 152, 0, 0.25);
+    }
+
+    .weather-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .weather-header i {
+      font-size: 2.8rem;
+      color: #ff9800;
+      animation: pulse-sun 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-sun {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.9; }
+    }
+
+    .weather-temp {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff6b35, #ff9800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .weather-condition {
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .weather-details {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .weather-detail {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .detail-label {
+      color: var(--text-light);
+    }
+
+    .detail-value {
+      color: var(--secondary-color);
+      font-weight: 600;
+    }
+
+    @media (max-width: 992px) {
+      .welcome-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .weather-info {
+        min-width: 100%;
+        margin-top: 20px;
+      }
+    }
+
+    .user-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: var(--transition);
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+    }
+
+    .user-info h2 {
+      color: var(--secondary-color);
+      margin-bottom: 8px;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .user-info h2 .badge {
+      font-size: 0.7rem;
+      background: linear-gradient(to right, #ffd700, #ffed4e);
+      color: #856404;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+    }
+    
+    .user-info p {
+      color: var(--text-light);
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+
+    .user-stats {
+      display: flex;
+      gap: 25px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px 20px;
+      border-radius: 12px;
+      min-width: 100px;
+      transition: var(--transition);
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
+    
+    .stat-item:hover {
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .action-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid rgba(76, 175, 80, 0.2);
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .action-card:hover {
+      background: white;
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+      border-color: var(--primary-color);
+    }
+    
+    .action-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    
+    .action-icon.green {
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: white;
+    }
+    
+    .action-icon.orange {
+      background: linear-gradient(135deg, #ff9800, #ffa726);
+      color: white;
+    }
+    
+    .action-icon.blue {
+      background: linear-gradient(135deg, #2196f3, #42a5f5);
+      color: white;
+    }
+    
+    .action-icon.red {
+      background: linear-gradient(135deg, #f44336, #ef5350);
+      color: white;
+    }
+    
+    .action-content {
+      flex: 1;
+    }
+    
+    .action-title {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 3px;
+      font-size: 0.95rem;
+    }
+    
+    .action-desc {
+      color: var(--text-light);
+      font-size: 0.8rem;
+    }
+    
+    .action-badge {
+      background: #f44336;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+      .modules-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+
+      .user-stats {
+        gap: 10px;
+      }
+      
+      .stat-item {
+        min-width: 85px;
+        padding: 10px 15px;
+      }
+      
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="/js/city-codes.js"></script>
+  <script src="/js/user-info.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-seedling"></i> 智禾慧农 - 农户中心</h1>
+      <button class="logout-btn" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> 退出登录
+      </button>
+    </div>
+
+    <div class="welcome-section">
+      <div class="welcome-header">
+        <img src="https://ts1.tc.mm.bing.net/th/id/OIP-C.FZ6GQ0UcHCLgdPoHx-4UlgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="用户头像" class="user-avatar">
+        <div class="user-info">
+          <h2>
+            欢迎，<span class="user-name">张三农户</span>
+            <span class="badge">⭐ 认证农户</span>
+          </h2>
+          <p>这里是您的农业智能助手，为您提供全方位的农业服务</p>
+          <div class="user-stats">
+            <div class="stat-item">
+              <div class="stat-value user-crop">小麦</div>
+              <div class="stat-label">种植作物</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value user-location">武汉</div>
+              <div class="stat-label">地区</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value alert-count">5</div>
+              <div class="stat-label">预警信息</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value days-used">128天</div>
+              <div class="stat-label">已使用</div>
+            </div>
+          </div>
+        </div>
+        <div class="weather-info">
+          <div class="weather-header">
+            <i class="fas fa-cloud-sun weather-icon"></i>
+            <div class="weather-temp">26°C</div>
+          </div>
+          <div class="weather-condition">多云转晴</div>
+          <div class="weather-details">
+            <div class="weather-detail">
+              <span class="detail-label">湿度</span>
+              <span class="detail-value weather-humidity">65%</span>
+            </div>
+            <div class="weather-detail">
+              <span class="detail-label">风速</span>
+              <span class="detail-value weather-wind">2.5m/s</span>
+            </div>
+            <div class="weather-detail">
+              <span class="detail-label">更新时间</span>
+              <span class="detail-value weather-pressure">1013hPa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 快捷操作卡片 -->
+      <div class="quick-actions">
+        <div class="action-card" onclick="navigateTo('farming-alert')">
+          <div class="action-icon red">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="action-content">
+            <div class="action-title">待处理预警 <span class="action-badge alert-count">5</span></div>
+            <div class="action-desc">有新的农时预警需要关注</div>
+          </div>
+        </div>
+        
+        <div class="action-card" onclick="navigateTo('daily-farming')">
+          <div class="action-icon green">
+            <i class="fas fa-leaf"></i>
+          </div>
+          <div class="action-content">
+            <div class="action-title">今日农事</div>
+            <div class="action-desc">查看今日农事安排</div>
+          </div>
+        </div>
+        
+        <div class="action-card" onclick="navigateTo('smart-community')">
+          <div class="action-icon blue">
+            <i class="fas fa-comments"></i>
+          </div>
+          <div class="action-content">
+            <div class="action-title">社区动态 <span class="action-badge">3</span></div>
+            <div class="action-desc">有新的消息和回复</div>
+          </div>
+        </div>
+        
+        <div class="action-card" onclick="navigateTo('agricultural-news')">
+          <div class="action-icon orange">
+            <i class="fas fa-newspaper"></i>
+          </div>
+          <div class="action-content">
+            <div class="action-title">最新资讯</div>
+            <div class="action-desc">查看农业政策和市场动态</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="dashboard-title">功能模块</h2>
+
+    <div class="modules-grid">
+      <div class="module-card" onclick="navigateTo('disease-identification')">
+        <div class="module-icon">
+          <i class="fas fa-eye"></i>
+        </div>
+        <h3 class="module-title">慧眼识病</h3>
+        <p class="module-description">上传作物照片，智能识别病虫害类型并提供防治建议</p>
+        <a href="#" class="enter-btn">立即体验</a>
+      </div>
+
+<!--      <div class="module-card" onclick="navigateTo('farming-alert')">-->
+<!--        <div class="module-icon">-->
+<!--          <i class="fas fa-bell"></i>-->
+<!--        </div>-->
+<!--        <h3 class="module-title">农时预警</h3>-->
+<!--        <p class="module-description">实时监测天气和作物生长状况，及时推送农事预警</p>-->
+<!--        <a href="#" class="enter-btn">立即体验</a>-->
+<!--      </div>-->
+
+      <div class="module-card" onclick="navigateTo('smart-community')">
+        <div class="module-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="module-title">智慧农友</h3>
+        <p class="module-description">与全国农友交流经验，分享农业知识和技术</p>
+        <a href="#" class="enter-btn">立即体验</a>
+      </div>
+
+      <div class="module-card" onclick="navigateTo('farming-almanac')">
+        <div class="module-icon">
+          <i class="fas fa-book"></i>
+        </div>
+        <h3 class="module-title">农时宝典</h3>
+        <p class="module-description">全面的农业知识库，涵盖种植、养殖、病虫害防治等</p>
+        <a href="#" class="enter-btn">立即体验</a>
+      </div>
+
+<!--      <div class="module-card" onclick="navigateTo('agricultural-news')">-->
+<!--        <div class="module-icon">-->
+<!--          <i class="fas fa-newspaper"></i>-->
+<!--        </div>-->
+<!--        <h3 class="module-title">农情速递</h3>-->
+<!--        <p class="module-description">最新农业资讯、政策解读、市场动态一网打尽</p>-->
+<!--        <a href="#" class="enter-btn">立即体验</a>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; 新增农业农村部新闻链接组件 &ndash;&gt;-->
+<!--      <div class="module-card" onclick="window.open('https://www.moa.gov.cn/xw/', '_blank')">-->
+<!--        <div class="module-icon">-->
+<!--          <i class="fas fa-external-link-alt"></i>-->
+<!--        </div>-->
+<!--        <h3 class="module-title">农业新闻</h3>-->
+<!--        <p class="module-description">农业农村部官方新闻资讯</p>-->
+<!--        <a href="#" class="enter-btn">查看详情</a>-->
+<!--      </div>-->
+    </div>
+  </div>
+
+  <script>
+    // 页面加载完成后初始化用户信息
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化用户界面（从 user-info.js 调用）
+      if (typeof initUserInterface === 'function') {
+        initUserInterface();
+      }
+    });
+    
+    // 退出登录功能
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      if (confirm('确定要退出登录吗？')) {
+        // 这里应该清除用户认证信息
+        alert('您已退出登录');
+        // 跳转到登录页面
+        window.location.href = '/login.html';
+      }
+    });
+
+    // 导航到指定模块
+    function navigateTo(module) {
+      window.location.href = `/api/${module}/index.html`;
+    }
+  </script>
+</body>
+</html>
+
+

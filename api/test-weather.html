@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>天气API测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, select {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    .weather-display {
+      display: none;
+      margin-top: 20px;
+    }
+    .weather-display.show {
+      display: block;
+    }
+    .weather-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      color: white;
+      margin-bottom: 20px;
+    }
+    .weather-icon {
+      font-size: 4rem;
+    }
+    .weather-temp {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    .weather-desc {
+      font-size: 1.5rem;
+      opacity: 0.9;
+    }
+    .weather-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    .detail-item {
+      background: #f5f7fa;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .detail-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    .detail-value {
+      color: #333;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    .log {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .city-select {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .city-btn {
+      padding: 10px;
+      background: #f5f7fa;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .city-btn:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌤️ 天气API测试</h1>
+      <p>高德天气API实时数据测试</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom: 20px;">快速选择城市</h2>
+      <div class="city-select">
+        <button class="city-btn" onclick="testCity('武汉', '420100')">武汉</button>
+        <button class="city-btn" onclick="testCity('北京', '110000')">北京</button>
+        <button class="city-btn" onclick="testCity('上海', '310000')">上海</button>
+        <button class="city-btn" onclick="testCity('广州', '440100')">广州</button>
+        <button class="city-btn" onclick="testCity('深圳', '440300')">深圳</button>
+        <button class="city-btn" onclick="testCity('成都', '510100')">成都</button>
+        <button class="city-btn" onclick="testCity('杭州', '330100')">杭州</button>
+        <button class="city-btn" onclick="testCity('西安', '610100')">西安</button>
+      </div>
+
+      <h2 style="margin-bottom: 20px;">自定义查询</h2>
+      <div class="input-group">
+        <input type="text" id="cityInput" placeholder="输入城市名称" value="武汉">
+        <input type="text" id="adcodeInput" placeholder="城市编码（可选）" value="420100">
+        <button onclick="testWeather()">查询天气</button>
+      </div>
+
+      <div class="weather-display" id="weatherDisplay">
+        <div class="weather-main">
+          <div>
+            <div class="weather-desc" id="cityName">武汉市</div>
+            <div class="weather-temp" id="temperature">--°C</div>
+            <div class="weather-desc" id="weatherDesc">--</div>
+          </div>
+          <div class="weather-icon" id="weatherIcon">
+            <i class="fas fa-cloud-sun"></i>
+          </div>
+        </div>
+
+        <div class="weather-details">
+          <div class="detail-item">
+            <div class="detail-label">湿度</div>
+            <div class="detail-value" id="humidity">--%</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">风向</div>
+            <div class="detail-value" id="windDirection">--</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">风力</div>
+            <div class="detail-value" id="windPower">--</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">更新时间</div>
+            <div class="detail-value" id="reportTime" style="font-size: 0.9rem;">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom: 15px;">API响应日志</h2>
+      <div class="log" id="logOutput">等待查询...</div>
+    </div>
+  </div>
+
+  <script>
+    function log(message) {
+      const logOutput = document.getElementById('logOutput');
+      const timestamp = new Date().toLocaleTimeString('zh-CN');
+      logOutput.textContent += `[${timestamp}] ${message}\n`;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    async function testWeather() {
+      const city = document.getElementById('cityInput').value || '武汉';
+      const adcode = document.getElementById('adcodeInput').value || '420100';
+      
+      log(`开始查询天气: ${city} (${adcode})`);
+      
+      try {
+        const url = `/api/weather?city=${encodeURIComponent(city)}&adcode=${adcode}`;
+        log(`请求URL: ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        log(`API响应: ${JSON.stringify(data, null, 2)}`);
+        
+        if (data.success && data.weather) {
+          displayWeather(data.weather);
+          log('✓ 天气数据获取成功');
+          
+          if (data.note) {
+            log(`⚠ ${data.note}`);
+          }
+        } else {
+          log(`✗ 获取失败: ${data.message || '未知错误'}`);
+        }
+      } catch (error) {
+        log(`✗ 请求错误: ${error.message}`);
+      }
+    }
+
+    function testCity(city, adcode) {
+      document.getElementById('cityInput').value = city;
+      document.getElementById('adcodeInput').value = adcode;
+      testWeather();
+    }
+
+    function displayWeather(weather) {
+      const display = document.getElementById('weatherDisplay');
+      display.classList.add('show');
+      
+      document.getElementById('cityName').textContent = weather.city || '未知';
+      document.getElementById('temperature').textContent = `${weather.temperature}°C`;
+      document.getElementById('weatherDesc').textContent = weather.weather || '--';
+      document.getElementById('humidity').textContent = `${weather.humidity}%`;
+      document.getElementById('windDirection').textContent = `${weather.wind_direction}风`;
+      document.getElementById('windPower').textContent = weather.wind_power;
+      
+      if (weather.report_time) {
+        const time = weather.report_time.split(' ')[1] || weather.report_time;
+        document.getElementById('reportTime').textContent = time;
+      }
+      
+      // 更新图标
+      updateIcon(weather.weather);
+    }
+
+    function updateIcon(weatherCondition) {
+      const iconElement = document.getElementById('weatherIcon').querySelector('i');
+      let iconClass = 'fa-cloud-sun';
+      
+      if (weatherCondition.includes('晴')) {
+        iconClass = 'fa-sun';
+      } else if (weatherCondition.includes('雨')) {
+        iconClass = 'fa-cloud-rain';
+      } else if (weatherCondition.includes('雪')) {
+        iconClass = 'fa-snowflake';
+      } else if (weatherCondition.includes('阴')) {
+        iconClass = 'fa-cloud';
+      } else if (weatherCondition.includes('雷')) {
+        iconClass = 'fa-bolt';
+      }
+      
+      iconElement.className = `fas ${iconClass}`;
+    }
+
+    // 页面加载时自动测试
+    window.onload = function() {
+      log('页面加载完成，准备测试天气API');
+      testWeather();
+    };
+  </script>
+</body>
+</html>

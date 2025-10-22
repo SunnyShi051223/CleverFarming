@@ -159,16 +159,23 @@
       text-align: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
       transition: var(--transition);
-      cursor: pointer;
       border: 2px solid rgba(0, 0, 0, 0.05);
     }
 
     .module-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 12px 20px rgba(0,0,0,0.15);
-      border-color: var(--primary-color);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
-
+    
+    .modules-container {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(240, 248, 240, 0.95));
+      border-radius: 16px;
+      padding: 25px 30px;
+      margin: 20px 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(76, 175, 80, 0.15);
+    }
+    
     .module-icon {
       font-size: 3rem;
       margin-bottom: 20px;
@@ -618,63 +625,44 @@
       </div>
     </div>
 
-    <h2 class="dashboard-title">功能模块</h2>
 
-    <div class="modules-grid">
-      <div class="module-card" onclick="navigateTo('disease-identification')">
-        <div class="module-icon">
-          <i class="fas fa-eye"></i>
+    <div class="modules-container">
+      <h2 class="dashboard-title">功能模块</h2>
+      <div class="modules-grid">
+
+        <div class="module-card" onclick="navigateTo('farming-almanac')">
+          <div class="module-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <h3 class="module-title">农时宝典</h3>
+          <p class="module-description">全面的农业知识库，涵盖种植、养殖、病虫害防治等</p>
+          <a href="#" class="enter-btn">立即体验</a>
         </div>
-        <h3 class="module-title">慧眼识病</h3>
-        <p class="module-description">上传作物照片，智能识别病虫害类型并提供防治建议</p>
-        <a href="#" class="enter-btn">立即体验</a>
-      </div>
 
-<!--      <div class="module-card" onclick="navigateTo('farming-alert')">-->
-<!--        <div class="module-icon">-->
-<!--          <i class="fas fa-bell"></i>-->
-<!--        </div>-->
-<!--        <h3 class="module-title">农时预警</h3>-->
-<!--        <p class="module-description">实时监测天气和作物生长状况，及时推送农事预警</p>-->
-<!--        <a href="#" class="enter-btn">立即体验</a>-->
-<!--      </div>-->
 
-      <div class="module-card" onclick="navigateTo('smart-community')">
-        <div class="module-icon">
-          <i class="fas fa-users"></i>
+        <div class="module-card" onclick="navigateTo('disease-identification')">
+          <div class="module-icon">
+            <i class="fas fa-eye"></i>
+          </div>
+          <h3 class="module-title">慧眼识病</h3>
+          <p class="module-description">上传作物照片，智能识别病虫害类型并提供防治建议</p>
+          <a href="#" class="enter-btn">立即体验</a>
         </div>
-        <h3 class="module-title">智慧农友</h3>
-        <p class="module-description">与全国农友交流经验，分享农业知识和技术</p>
-        <a href="#" class="enter-btn">立即体验</a>
-      </div>
 
-      <div class="module-card" onclick="navigateTo('farming-almanac')">
-        <div class="module-icon">
-          <i class="fas fa-book"></i>
+        <div class="module-card" onclick="navigateTo('smart-community')">
+          <div class="module-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3 class="module-title">智慧农友</h3>
+          <p class="module-description">与全国农友交流经验，分享农业知识和技术</p>
+          <a href="#" class="enter-btn">立即体验</a>
         </div>
-        <h3 class="module-title">农时宝典</h3>
-        <p class="module-description">全面的农业知识库，涵盖种植、养殖、病虫害防治等</p>
-        <a href="#" class="enter-btn">立即体验</a>
+
+
+
+
+
       </div>
-
-<!--      <div class="module-card" onclick="navigateTo('agricultural-news')">-->
-<!--        <div class="module-icon">-->
-<!--          <i class="fas fa-newspaper"></i>-->
-<!--        </div>-->
-<!--        <h3 class="module-title">农情速递</h3>-->
-<!--        <p class="module-description">最新农业资讯、政策解读、市场动态一网打尽</p>-->
-<!--        <a href="#" class="enter-btn">立即体验</a>-->
-<!--      </div>-->
-
-<!--      &lt;!&ndash; 新增农业农村部新闻链接组件 &ndash;&gt;-->
-<!--      <div class="module-card" onclick="window.open('https://www.moa.gov.cn/xw/', '_blank')">-->
-<!--        <div class="module-icon">-->
-<!--          <i class="fas fa-external-link-alt"></i>-->
-<!--        </div>-->
-<!--        <h3 class="module-title">农业新闻</h3>-->
-<!--        <p class="module-description">农业农村部官方新闻资讯</p>-->
-<!--        <a href="#" class="enter-btn">查看详情</a>-->
-<!--      </div>-->
     </div>
   </div>
 

@@ -57,7 +57,7 @@ def get_user_profile(user_id):
             # 查询用户基本信息
             sql = """
                 SELECT id, username, role, location, city, crop_type, 
-                       farm_area, avatar_url, created_at, last_login
+                       farm_area, avatar_url, created_at, last_login, is_initialized
                 FROM users 
                 WHERE id = %s
             """
@@ -140,6 +140,10 @@ def update_user_profile(user_id):
             if 'farm_area' in data:
                 update_fields.append("farm_area = %s")
                 params.append(data['farm_area'])
+            
+            if 'is_initialized' in data:
+                update_fields.append("is_initialized = %s")
+                params.append(data['is_initialized'])
             
             if not update_fields:
                 return jsonify({'success': False, 'message': '没有要更新的字段'}), 400

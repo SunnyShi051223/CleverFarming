@@ -139,6 +139,14 @@ async function initUserInterface() {
         const user = await getUserProfile();
         
         if (user) {
+            // 检查是否已完成初始化，若未完成，则弹出强制引导收集必要信息
+            if (!user.is_initialized) {
+                const initModal = document.getElementById('initProfileModal');
+                if (initModal) {
+                    initModal.style.display = 'flex';
+                }
+            }
+
             // 更新用户名
             const usernameElements = document.querySelectorAll('.user-name, .username');
             usernameElements.forEach(el => {
@@ -295,4 +303,45 @@ if (document.readyState === 'loading') {
 } else {
     initUserInterface();
     startWeatherAutoRefresh();
+}
+
+/**
+ * 提交初始化信息
+ */
+async function submitInitialization() {
+    const city = document.getElementById('initCity').value.trim();
+    const cropType = document.getElementById('initCropType').value;
+    const farmArea = document.getElementById('initFarmArea').value;
+    
+    if (!city) {
+        alert('请输入所在地区（城市）');
+        return;
+    }
+    if (!farmArea || isNaN(farmArea) || parseFloat(farmArea) <= 0) {
+        alert('请输入有效的农田面积');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('initSubmitBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '正在配置专属数据...';
+    submitBtn.disabled = true;
+    
+    // 提交到后端并更新初始化标记为1 (true)
+    const success = await updateUserProfile({
+        city: city,
+        crop_type: cropType,
+        farm_area: parseFloat(farmArea),
+        is_initialized: 1
+    });
+    
+    if (success) {
+        document.getElementById('initProfileModal').style.display = 'none';
+        alert('初始化设置成功！系统已为您加载专属农业信息面板。');
+        await initUserInterface(); // 重新加载用户最新数据
+    } else {
+        alert('信息保存失败，请检查网络并重试');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
 }

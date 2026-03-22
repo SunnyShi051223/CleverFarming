@@ -727,7 +727,7 @@
     // 加载帖子列表从后端接口
     async function fetchPosts() {
       try {
-        const response = await fetch('/api/community/posts');
+        const response = await fetch('/api/community/posts?t=' + Date.now(), { credentials: 'include' });
         const result = await response.json();
         if (result.success) {
           renderPostFeed(result.data);
@@ -765,6 +765,7 @@
         const res = await fetch('/api/community/posts', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
           body: JSON.stringify({content: text})
         });
         const result = await res.json();
@@ -805,53 +806,116 @@
             </div>
           </div>
           <div class="post-content">
-            ${post.content}
+            ${post.content || ''}
           </div>
           <div class="post-tags">
-            ${post.tags.map(tag => `<span class="post-tag">${tag}</span>`).join('')}
+            ${(post.tags || []).map(tag => `<span class="post-tag">${tag}</span>`).join('')}
           </div>
           <div class="post-actions">
-            <div class="post-action" onclick="likePost(${post.id})" style="color: ${post.is_liked ? 'red' : 'var(--text-light)'}">
+            <div class="post-action" id="like-btn-${post.id}" onclick="likePost(${post.id})" style="color: ${post.is_liked ? 'red' : 'var(--text-light)'}">
               <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
-              <span>${post.likes_count}</span>
+              <span id="likes-count-${post.id}">${post.likes_count}</span>
             </div>
-            <div class="post-action" onclick="commentPost(${post.id})">
+            <div class="post-action" onclick="toggleComments(${post.id})">
               <i class="far fa-comment"></i>
-              <span>${post.comments_count}</span>
+              <span id="comments-count-${post.id}">${post.comments_count}</span>
             </div>
             <div class="post-action" onclick="sharePost(${post.id})">
               <i class="fas fa-share"></i>
               <span>分享</span>
             </div>
           </div>
+          <div class="post-comments-section" id="comments-${post.id}" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+             <!-- Comments will be loaded here -->
+          </div>
         </div>
       `).join('');
     }
     
-    // 点赞功能
-    async function likePost(id) {
-      try {
-        const res = await fetch(`/api/community/posts/${id}/like`, {method: 'POST'});
-        if(res.ok) fetchPosts();
-      } catch (e) {
-        console.error(e);
-      }
+    // 显示/隐藏评论区
+    async function toggleComments(id) {
+       const section = document.getElementById(`comments-${id}`);
+       if (section.style.display === 'none') {
+           section.style.display = 'block';
+           section.innerHTML = '<div class="loading" style="padding:10px;"><i class="fas fa-spinner fa-spin"></i> 加载评论中...</div>';
+           try {
+               const res = await fetch(`/api/community/posts/${id}/comments?t=` + Date.now(), { credentials: 'include' });
+               const result = await res.json();
+               if (result.success) {
+                  const commentsHtml = result.data.map(c => `
+                    <div style="display:flex; gap:10px; margin-bottom:10px; background:#f9f9f9; padding:10px; border-radius:8px;">
+                      <img src="${c.avatar_url || 'https://ts1.tc.mm.bing.net/th/id/OIP-C.FZ6GQ0UcHCLgdPoHx-4UlgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                      <div style="flex:1;">
+                        <div style="font-size:0.85rem; font-weight:bold; color:var(--text-dark);">${c.username} <span style="font-size:0.75rem; color:var(--text-light); font-weight:normal; margin-left:8px;">${c.created_at}</span></div>
+                        <div style="font-size:0.95rem; margin-top:3px; color:var(--text-dark);">${c.content}</div>
+                      </div>
+                    </div>
+                  `).join('');
+                  section.innerHTML = (commentsHtml || '<div style="color:var(--text-light); font-size:0.9rem; margin-bottom:10px;">暂无评论，快来抢沙发吧！</div>') + `
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                      <input type="text" id="comment-input-${id}" placeholder="写下你的评论..." style="flex:1; border:1px solid var(--border-color); border-radius:20px; padding:8px 15px; font-size:0.9rem; outline:none;">
+                      <button onclick="submitComment(${id})" style="background:var(--primary-green); color:white; border:none; border-radius:20px; padding:8px 18px; cursor:pointer; font-weight:bold;">发送</button>
+                    </div>
+                  `;
+               }
+           } catch(e) {
+               section.innerHTML = '<div style="color:red; font-size:0.9rem;">加载评论失败</div>';
+           }
+       } else {
+           section.style.display = 'none';
+       }
     }
-    
-    // 评论功能
-    async function commentPost(id) {
-      const text = prompt('请输入您的评论：');
-      if (text) {
+
+    // 提交评论
+    async function submitComment(id) {
+        const input = document.getElementById(`comment-input-${id}`);
+        const text = input.value.trim();
+        if (!text) {
+          alert('评论内容不能为空');
+          return;
+        }
         try {
           const res = await fetch(`/api/community/posts/${id}/comments`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
             body: JSON.stringify({content: text})
           });
-          if(res.ok) alert('评论成功'); fetchPosts();
+          const result = await res.json();
+          if(result.success) {
+            input.value = '';
+            const section = document.getElementById(`comments-${id}`);
+            section.style.display = 'none';
+            toggleComments(id);
+            const countSpan = document.getElementById(`comments-count-${id}`);
+            if (countSpan) countSpan.textContent = parseInt(countSpan.textContent) + 1;
+          } else {
+            alert('评论失败: ' + result.message);
+          }
         } catch (e) {
           console.error(e);
         }
+    }
+
+    // 点赞功能
+    async function likePost(id) {
+      try {
+        const res = await fetch(`/api/community/posts/${id}/like`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
+        const result = await res.json();
+        if(result.success) {
+           const countSpan = document.getElementById(`likes-count-${id}`);
+           const btn = document.getElementById(`like-btn-${id}`);
+           if (countSpan) countSpan.textContent = result.likes_count;
+           if (btn) {
+             btn.style.color = result.action === 'liked' ? 'red' : 'var(--text-light)';
+             btn.querySelector('i').className = result.action === 'liked' ? 'fas fa-heart' : 'far fa-heart';
+           }
+        }
+      } catch (e) {
+        console.error(e);
       }
     }
     
@@ -964,6 +1028,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ question: question })
       })
       .then(response => response.json())

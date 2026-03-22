@@ -669,6 +669,39 @@
     </div>
   </div>
 
+  <!-- 用户初始化信息弹窗 -->
+  <div id="initProfileModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div class="modal-content" style="background:white; border-radius:15px; padding:35px 30px; width:90%; max-width:420px; box-shadow:0 10px 40px rgba(0,0,0,0.25);">
+      <h2 style="color:var(--secondary-color); margin-bottom:10px; text-align:center; font-size:1.6rem;">欢迎来到智禾慧农 <i class="fas fa-leaf" style="color:var(--primary-color);"></i></h2>
+      <p style="color:var(--text-light); margin-bottom:25px; text-align:center; font-size:0.95rem;">全新账号首次使用，请完善您的专属农业基地信息，以便我们为您提供精准的气象与农事服务。</p>
+      
+      <div style="margin-bottom:18px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600; color:var(--text-dark);">所在地区 (城市)</label>
+        <input type="text" id="initCity" placeholder="例如：武汉" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; outline:none;" value="武汉">
+      </div>
+      
+      <div style="margin-bottom:18px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600; color:var(--text-dark);">主要种植作物</label>
+        <select id="initCropType" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; outline:none; cursor:pointer;">
+          <option value="水稻">水稻</option>
+          <option value="小麦" selected>小麦</option>
+          <option value="玉米">玉米</option>
+          <option value="大豆">大豆</option>
+          <option value="棉花">棉花</option>
+          <option value="蔬菜">蔬菜</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom:30px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600; color:var(--text-dark);">农田面积 (亩)</label>
+        <input type="number" id="initFarmArea" placeholder="例如：50" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; outline:none;" min="1" step="0.1">
+      </div>
+      
+      <button onclick="submitInitialization()" id="initSubmitBtn" style="width:100%; padding:14px; background:linear-gradient(to right, var(--secondary-color), var(--primary-color)); color:white; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(76,175,80,0.3); transition:all 0.3s ease;">生成专属农场空间</button>
+    </div>
+  </div>
+
   <script>
     // 页面加载完成后初始化用户信息
     document.addEventListener('DOMContentLoaded', function() {

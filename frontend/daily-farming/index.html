@@ -482,6 +482,10 @@
     <h3 style="margin-bottom:15px; color:var(--primary-green);">添加新任务</h3>
     <input id="newTaskTitle" type="text" placeholder="任务标题" style="width:100%; border:1px solid var(--border-color); border-radius:8px; padding:10px; margin-bottom:10px;">
     <textarea id="newTaskDesc" rows="3" placeholder="任务描述" style="width:100%; border:1px solid var(--border-color); border-radius:8px; padding:10px; margin-bottom:10px; resize:vertical;"></textarea>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <input id="newTaskTime" type="time" value="08:00" style="flex:1; border:1px solid var(--border-color); border-radius:8px; padding:10px;">
+      <input id="newTaskLocation" type="text" placeholder="任务地点 (默认: 农田)" style="flex:2; border:1px solid var(--border-color); border-radius:8px; padding:10px;">
+    </div>
     <select id="newTaskPriority" style="width:100%; border:1px solid var(--border-color); border-radius:8px; padding:10px; margin-bottom:10px;">
       <option value="high">紧急</option>
       <option value="medium" selected>重要</option>
@@ -631,7 +635,7 @@
         
         // 如果没有缓存或缓存过期，则从服务器获取
         console.log('从服务器获取天气信息...');
-        const response = await fetch('/api/user/weather');
+        const response = await fetch('/api/user/weather', { credentials: 'include' });
         const result = await response.json();
         
         if (result.success) {
@@ -718,7 +722,7 @@
     // 加载任务
     async function fetchTasks() {
       try {
-        const response = await fetch('/api/tasks');
+        const response = await fetch('/api/tasks?t=' + Date.now(), { credentials: 'include' });
         const result = await response.json();
         if (result.success) {
           renderTasks(result.data);
@@ -791,7 +795,10 @@
     async function completeTask(taskId) {
       if(confirm('确定标记此任务为已完成吗？')) {
         try {
-          const response = await fetch('/api/tasks/' + taskId + '/status', { method: 'PUT' });
+          const response = await fetch('/api/tasks/' + taskId + '/status', { 
+              method: 'PUT',
+              credentials: 'include'
+          });
           const result = await response.json();
           if (result.success) {
             fetchTasks(); // 刷新列表
@@ -805,7 +812,7 @@
     // 查看任务详情
     async function viewTaskDetail(taskId) {
       try {
-        const res = await fetch(`/api/tasks/${taskId}`);
+        const res = await fetch(`/api/tasks/${taskId}?t=` + Date.now(), { credentials: 'include' });
         const result = await res.json();
         if (result.success) {
           document.getElementById('detailTitle').textContent = result.data.title;
@@ -832,6 +839,8 @@
       const title = document.getElementById('newTaskTitle').value.trim();
       const desc = document.getElementById('newTaskDesc').value.trim();
       const priority = document.getElementById('newTaskPriority').value;
+      const time = document.getElementById('newTaskTime').value || '08:00';
+      const location = document.getElementById('newTaskLocation').value.trim() || '农田';
       if (!title) {
         alert('请输入任务标题！');
         return;
@@ -840,13 +849,15 @@
         const res = await fetch('/api/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description: desc, priority, location: '农田', time: '08:00' })
+          credentials: 'include',
+          body: JSON.stringify({ title, description: desc, priority, location: location, time: time })
         });
         const result = await res.json();
         if (result.success) {
           document.getElementById('addTaskModal').close();
           document.getElementById('newTaskTitle').value = '';
           document.getElementById('newTaskDesc').value = '';
+          document.getElementById('newTaskLocation').value = '';
           fetchTasks(); // 刷新任务列表
         } else {
           alert('添加失败: ' + result.message);

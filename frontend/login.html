@@ -208,16 +208,38 @@
       <!-- 注册表单 -->
       <div id="registerForm" class="form-section">
         <div class="form-group">
-          <label for="regUsername">用户名</label>
+          <label for="regUsername">用户名 <span style="color: #f44336;">*</span></label>
           <input type="text" id="regUsername" placeholder="请输入用户名" required />
         </div>
         <div class="form-group">
-          <label for="regPassword">密码</label>
+          <label for="regPassword">密码 <span style="color: #f44336;">*</span></label>
           <input type="password" id="regPassword" placeholder="请输入密码" required />
         </div>
         <div class="form-group">
-          <label for="regConfirmPassword">确认密码</label>
+          <label for="regConfirmPassword">确认密码 <span style="color: #f44336;">*</span></label>
           <input type="password" id="regConfirmPassword" placeholder="请再次输入密码" required />
+        </div>
+        <div class="form-group">
+          <label for="regCity">所在城市 <span style="color: #f44336;">*</span></label>
+          <input type="text" id="regCity" placeholder="请输入所在城市" required />
+        </div>
+        <div class="form-group">
+          <label for="regCropType">种植作物 <span style="color: #f44336;">*</span></label>
+          <select id="regCropType" required style="width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: white;">
+            <option value="">请选择种植作物</option>
+            <option value="小麦">小麦</option>
+            <option value="玉米">玉米</option>
+            <option value="水稻">水稻</option>
+            <option value="大豆">大豆</option>
+            <option value="棉花">棉花</option>
+            <option value="蔬菜">蔬菜</option>
+            <option value="水果">水果</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="regFarmArea">农田面积（亩）</label>
+          <input type="number" id="regFarmArea" placeholder="请输入农田面积（可选）" min="0" step="0.01" />
         </div>
         <button class="submit-btn" onclick="register()">注册</button>
         <div class="switch-form">
@@ -385,6 +407,9 @@
         const username = document.getElementById('regUsername').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
+        const city = document.getElementById('regCity').value.trim();
+        const cropType = document.getElementById('regCropType').value;
+        const farmArea = document.getElementById('regFarmArea').value;
         const role = document.querySelector('.role-option.active').dataset.role; // 获取选择的角色
         const errorElement = document.getElementById('registerError');
         
@@ -392,18 +417,33 @@
         errorElement.textContent = '';
 
         // 前端验证
-        if (password !== confirmPassword) {
-            errorElement.textContent = '两次输入的密码不一致！';
+        if (!username) {
+            errorElement.textContent = '用户名不能为空！';
+            document.getElementById('regUsername').focus();
             return;
         }
 
         if (password.length < 6) {
             errorElement.textContent = '密码长度至少为6位！';
+            document.getElementById('regPassword').focus();
             return;
         }
 
-        if (!username) {
-            errorElement.textContent = '用户名不能为空！';
+        if (password !== confirmPassword) {
+            errorElement.textContent = '两次输入的密码不一致！';
+            document.getElementById('regConfirmPassword').focus();
+            return;
+        }
+
+        if (!city) {
+            errorElement.textContent = '请输入所在城市！';
+            document.getElementById('regCity').focus();
+            return;
+        }
+
+        if (!cropType) {
+            errorElement.textContent = '请选择种植作物！';
+            document.getElementById('regCropType').focus();
             return;
         }
 
@@ -413,6 +453,19 @@
             const originalBtnText = registerBtn.textContent;
             registerBtn.disabled = true;
             registerBtn.textContent = '注册中...';
+            registerBtn.style.opacity = '0.7';
+            registerBtn.style.cursor = 'wait';
+            
+            // 构建注册数据
+            const registerData = {
+                username: username,
+                password: password,
+                role: role,
+                city: city,
+                crop_type: cropType,
+                farm_area: farmArea ? parseFloat(farmArea) : null,
+                is_initialized: 1  // 注册时已填写信息，标记为已初始化
+            };
             
             // 发送注册请求到后端API
             const response = await fetch('/api/register', {
@@ -420,11 +473,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    role: role
-                })
+                body: JSON.stringify(registerData)
             });
 
             const data = await response.json();
@@ -432,16 +481,23 @@
             // 恢复按钮状态
             registerBtn.disabled = false;
             registerBtn.textContent = originalBtnText;
+            registerBtn.style.opacity = '1';
+            registerBtn.style.cursor = 'pointer';
 
             if (data.success) {
                 // 注册成功，显示成功消息并切换到登录表单
-                alert('注册成功！请登录您的账户。');
-                showLoginForm();
+                showSuccess('注册成功！请登录您的账户。');
+                setTimeout(() => {
+                    showLoginForm();
+                }, 1500);
                 
                 // 清空注册表单
                 document.getElementById('regUsername').value = '';
                 document.getElementById('regPassword').value = '';
                 document.getElementById('regConfirmPassword').value = '';
+                document.getElementById('regCity').value = '';
+                document.getElementById('regCropType').value = '';
+                document.getElementById('regFarmArea').value = '';
             } else {
                 // 显示服务器返回的错误信息
                 errorElement.textContent = data.message || '注册失败，请重试。';
@@ -455,6 +511,8 @@
             if (registerBtn) {
                 registerBtn.disabled = false;
                 registerBtn.textContent = '注册';
+                registerBtn.style.opacity = '1';
+                registerBtn.style.cursor = 'pointer';
             }
         }
     }

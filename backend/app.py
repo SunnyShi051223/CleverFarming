@@ -452,11 +452,34 @@ def get_user_info(current_user_id):
     try:
         connection = get_db_connection()
         with connection.cursor() as cursor:
-            sql = "SELECT id, username, role FROM users WHERE id = %s"
+            sql = "SELECT id, username, role, city, crop_type, farm_area, is_initialized, created_at FROM users WHERE id = %s"
             cursor.execute(sql, (current_user_id,))
             user = cursor.fetchone()
 
             if user:
+                # 计算已使用天数
+                from datetime import datetime
+                if user.get('created_at'):
+                    created_date = user['created_at']
+                    if isinstance(created_date, str):
+                        created_date = datetime.strptime(created_date, '%Y-%m-%d %H:%M:%S')
+                    days_used = (datetime.now() - created_date).days
+                else:
+                    days_used = 0
+                
+                # 添加统计信息
+                user['stats'] = {
+                    'days_used': days_used
+                }
+                
+                # 获取未读预警数量
+                cursor.execute(
+                    "SELECT COUNT(*) as unread_count FROM farming_alerts WHERE user_id = %s AND is_read = FALSE",
+                    (current_user_id,)
+                )
+                alert_result = cursor.fetchone()
+                user['stats']['unread_alerts'] = alert_result['unread_count'] if alert_result else 0
+                
                 return jsonify({
                     'success': True,
                     'user': user
@@ -467,6 +490,62 @@ def get_user_info(current_user_id):
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    finally:
+        connection.close()
+
+
+@app.route('/api/user/info', methods=['PUT'])
+@token_required
+def update_user_info(current_user_id):
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': '没有提供更新数据'}), 400
+        
+        # 构建更新SQL语句
+        update_fields = []
+        update_values = []
+        
+        if 'city' in data:
+            update_fields.append("city = %s")
+            update_values.append(data['city'])
+        
+        if 'crop_type' in data:
+            update_fields.append("crop_type = %s")
+            update_values.append(data['crop_type'])
+        
+        if 'farm_area' in data:
+            update_fields.append("farm_area = %s")
+            update_values.append(data['farm_area'])
+        
+        if 'is_initialized' in data:
+            update_fields.append("is_initialized = %s")
+            update_values.append(data['is_initialized'])
+        
+        if not update_fields:
+            return jsonify({'success': False, 'message': '没有有效的更新字段'}), 400
+        
+        # 添加用户ID到参数列表
+        update_values.append(current_user_id)
+        
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            sql = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s"
+            cursor.execute(sql, update_values)
+            connection.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': '用户信息更新成功'
+            }), 200
+            
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+        return jsonify({'success': False, 'message': '数据库操作失败'}), 500
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({'success': False, 'message': '服务器内部错误'}), 500
     finally:
         connection.close()
 
@@ -491,6 +570,12 @@ def register():
     if len(password) < 6:
         return jsonify({'success': False, 'message': '密码长度至少为6位'}), 400
     
+    # 获取个性化信息（可选字段）
+    city = data.get('city', '北京').strip()  # 默认北京
+    crop_type = data.get('crop_type', '小麦').strip()  # 默认小麦
+    farm_area = data.get('farm_area')  # 可选
+    is_initialized = data.get('is_initialized', 0)  # 默认未初始化
+    
     try:
         connection = get_db_connection()
         with connection.cursor() as cursor:
@@ -502,13 +587,13 @@ def register():
             # 密码哈希处理
             hashed_password = hash_password(password)
             
-            # 插入新用户
+            # 插入新用户（包含个性化信息）
             cursor.execute(
                 """
-                INSERT INTO users (username, password_hash, role, created_at)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO users (username, password_hash, role, city, crop_type, farm_area, is_initialized, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (username, hashed_password, role, datetime.utcnow())
+                (username, hashed_password, role, city, crop_type, farm_area, is_initialized, datetime.utcnow())
             )
             
             # 获取新创建的用户ID
@@ -523,7 +608,10 @@ def register():
                 'user': {
                     'id': user_id,
                     'username': username,
-                    'role': role
+                    'role': role,
+                    'city': city,
+                    'crop_type': crop_type,
+                    'farm_area': farm_area
                 }
             }), 201
             

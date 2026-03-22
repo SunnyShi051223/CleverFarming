@@ -6,7 +6,7 @@
  */
 async function getUserProfile() {
     try {
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/user/info', {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -106,7 +106,7 @@ async function getUserStats() {
  */
 async function updateUserProfile(userData) {
     try {
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/user/info', {
             method: 'PUT',
             credentials: 'include',
             headers: {
@@ -144,6 +144,35 @@ async function initUserInterface() {
                 const initModal = document.getElementById('initProfileModal');
                 if (initModal) {
                     initModal.style.display = 'flex';
+                    
+                    // 防止点击背景关闭模态框
+                    initModal.addEventListener('click', function(e) {
+                        if (e.target === initModal) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+                    
+                    // 防止ESC键关闭模态框
+                    document.addEventListener('keydown', function preventEsc(e) {
+                        if (e.key === 'Escape' && initModal.style.display === 'flex') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+                    
+                    // 添加输入框焦点效果
+                    const inputs = initModal.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        input.addEventListener('focus', function() {
+                            this.style.borderColor = 'var(--primary-color)';
+                            this.style.boxShadow = '0 0 0 3px rgba(76,175,80,0.1)';
+                        });
+                        input.addEventListener('blur', function() {
+                            this.style.borderColor = 'var(--border-color)';
+                            this.style.boxShadow = 'none';
+                        });
+                    });
                 }
             }
 
@@ -171,6 +200,13 @@ async function initUserInterface() {
             const cropElements = document.querySelectorAll('.user-crop');
             cropElements.forEach(el => {
                 el.textContent = user.crop_type || '小麦';
+            });
+            
+            // 更新农田面积
+            const farmAreaElements = document.querySelectorAll('.user-farm-area');
+            farmAreaElements.forEach(el => {
+                const area = user.farm_area || 0;
+                el.textContent = `${area}亩`;
             });
             
             // 更新统计信息
@@ -313,12 +349,22 @@ async function submitInitialization() {
     const cropType = document.getElementById('initCropType').value;
     const farmArea = document.getElementById('initFarmArea').value;
     
+    // 严格验证
     if (!city) {
         alert('请输入所在地区（城市）');
+        document.getElementById('initCity').focus();
         return;
     }
+    
+    if (!cropType) {
+        alert('请选择主要种植作物');
+        document.getElementById('initCropType').focus();
+        return;
+    }
+    
     if (!farmArea || isNaN(farmArea) || parseFloat(farmArea) <= 0) {
-        alert('请输入有效的农田面积');
+        alert('请输入有效的农田面积（必须大于0）');
+        document.getElementById('initFarmArea').focus();
         return;
     }
     
@@ -326,22 +372,32 @@ async function submitInitialization() {
     const originalText = submitBtn.textContent;
     submitBtn.textContent = '正在配置专属数据...';
     submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
     
-    // 提交到后端并更新初始化标记为1 (true)
-    const success = await updateUserProfile({
-        city: city,
-        crop_type: cropType,
-        farm_area: parseFloat(farmArea),
-        is_initialized: 1
-    });
-    
-    if (success) {
-        document.getElementById('initProfileModal').style.display = 'none';
-        alert('初始化设置成功！系统已为您加载专属农业信息面板。');
-        await initUserInterface(); // 重新加载用户最新数据
-    } else {
-        alert('信息保存失败，请检查网络并重试');
+    try {
+        // 提交到后端并更新初始化标记为1 (true)
+        const success = await updateUserProfile({
+            city: city,
+            crop_type: cropType,
+            farm_area: parseFloat(farmArea),
+            is_initialized: 1
+        });
+        
+        if (success) {
+            document.getElementById('initProfileModal').style.display = 'none';
+            alert('初始化设置成功！系统已为您加载专属农业信息面板。');
+            await initUserInterface(); // 重新加载用户最新数据
+        } else {
+            alert('信息保存失败，请检查网络并重试');
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+        }
+    } catch (error) {
+        console.error('提交初始化信息失败:', error);
+        alert('提交失败，请检查网络连接后重试');
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
     }
 }

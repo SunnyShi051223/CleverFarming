@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>农情速递 - 智禾慧农</title>
+  <style>
+    :root {
+      --primary-orange: #f57c00;
+      --secondary-orange: #ff9800;
+      --accent-orange: #ffe0b2;
+      --light-bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    body {
+      background: url("BG.jpg");
+      background-size: cover;
+      font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+      color: white;
+      padding: 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+    }
+    .header h1 i {
+      margin-right: 12px;
+    }
+    .back-home-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+    }
+    .back-home-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .module-title {
+      color: var(--primary-orange);
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      border-bottom: 2px solid var(--accent-orange);
+      padding-bottom: 10px;
+    }
+    .module-description {
+      color: var(--text-light);
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+    }
+    
+    .news-container {
+      background-color: var(--card-bg);
+      padding: 35px;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      min-height: 500px;
+    }
+    
+    .news-header {
+      margin-bottom: 30px;
+    }
+    
+    .news-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .search-box {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .search-box input {
+      padding: 12px 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      min-width: 300px;
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--secondary-orange);
+      box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
+    }
+    
+    .search-box button {
+      padding: 12px 20px;
+      background: linear-gradient(to right, var(--primary-orange), var(--secondary-orange));
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+    }
+    
+    .search-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(245, 124, 0, 0.4);
+    }
+    
+    .news-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 30px;
+    }
+    
+    .news-main {
+      background-color: var(--light-bg);
+      border-radius: 15px;
+      padding: 25px;
+    }
+    
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+    }
+    
+    .news-item {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+    .news-item::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(245, 124, 0, 0.05) 0%, transparent 100%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+    
+    .news-item:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(245, 124, 0, 0.3);
+    }
+    .news-item:hover::after {
+      opacity: 1;
+    }
+    
+    .news-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+    .news-item:hover .news-image {
+      transform: scale(1.1);
+    }
+    
+    .news-content {
+      padding: 20px;
+    }
+    
+    .news-category {
+      display: inline-block;
+      background-color: var(--accent-orange);
+      color: var(--primary-orange);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    .news-title {
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+    
+    .news-summary {
+      color: var(--text-light);
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    .news-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 15px;
+    }
+    
+    .news-sidebar {
+      background-color: var(--light-bg);
+      border-radius: 15px;
+      padding: 25px;
+      height: fit-content;
+    }
+    
+    .sidebar-section {
+      margin-bottom: 30px;
+    }
+    
+    .sidebar-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .sidebar-section h3 {
+      color: var(--primary-orange);
+      margin-top: 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent-orange);
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+    
+    .popular-news {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .popular-news li {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .popular-news li:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .popular-news a {
+      text-decoration: none;
+      color: var(--text-dark);
+      display: block;
+      transition: var(--transition);
+    }
+    
+    .popular-news a:hover {
+      color: var(--primary-orange);
+    }
+    
+    .popular-news .title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+    
+    .popular-news .meta {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .tag {
+      background-color: var(--card-bg);
+      color: var(--text-dark);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .tag:hover {
+      background-color: var(--primary-orange);
+      color: white;
+    }
+    
+    .news-detail {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+      padding: 35px;
+      box-shadow: var(--shadow);
+    }
+    
+    .detail-header {
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-header h2 {
+      color: var(--primary-orange);
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+    
+    .detail-meta {
+      display: flex;
+      gap: 20px;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    
+    .detail-image {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 25px;
+    }
+    
+    .detail-content {
+      line-height: 1.8;
+      font-size: 1.05rem;
+    }
+    
+    .detail-content p {
+      margin-bottom: 20px;
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 25px;
+    }
+    
+    .back-btn:hover {
+      background: var(--card-bg);
+      transform: translateX(-3px);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+    
+    .loading i {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .news-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .search-box input {
+        min-width: 200px;
+      }
+      
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-newspaper"></i> 智禾慧农 - 农情速递</h1>
+      <a href="/api/farmer.html" class="back-home-btn">
+        <i class="fas fa-home"></i> 返回首页
+      </a>
+    </div>
+
+    <div class="news-container">
+      <div class="news-header">
+        <h2 class="module-title">农情速递</h2>
+        <p class="module-description">最新农业资讯、政策解读、市场动态一网打尽</p>
+        
+        <div class="news-actions">
+          <div class="search-box">
+            <input type="text" placeholder="搜索农业资讯...">
+            <button><i class="fas fa-search"></i> 搜索</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="news-layout">
+        <!-- 主内容区 -->
+        <div class="news-main">
+          <div class="news-grid" id="newsGrid">
+            <div class="loading">
+              <i class="fas fa-spinner"></i>
+              <p>正在加载资讯...</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧边栏 -->
+        <div class="news-sidebar">
+          <div class="sidebar-section">
+            <h3>热门资讯</h3>
+            <ul class="popular-news" id="popularNews">
+              <li>
+                <a href="javascript:void(0)">
+                  <div class="title">2025年中央一号文件发布，全面推进乡村振兴</div>
+                  <div class="meta">2025-02-15 · 1.2万阅读</div>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0)">
+                  <div class="title">全国春耕生产形势分析及技术指导意见</div>
+                  <div class="meta">2025-03-10 · 8500阅读</div>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0)">
+                  <div class="title">农产品价格指数持续上涨，市场供需分析</div>
+                  <div class="meta">2025-04-05 · 7200阅读</div>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="sidebar-section">
+            <h3>热门标签</h3>
+            <div class="tags">
+              <span class="tag">乡村振兴</span>
+              <span class="tag">春耕生产</span>
+              <span class="tag">农产品价格</span>
+              <span class="tag">政策解读</span>
+              <span class="tag">农业科技</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 资讯数据
+    let newsData = [];
+    
+    // 当前显示的资讯详情
+    let currentDetail = null;
+    
+    async function fetchNews() {
+      try {
+        const response = await fetch('/api/news/list');
+        const result = await response.json();
+        if(result.code === 200) {
+          newsData = result.data;
+          // 根据是否有搜索条件来渲染
+          const keyword = document.querySelector('.search-box input').value.trim();
+          if (keyword) {
+            searchNews(keyword);
+          } else {
+            renderNewsItems(newsData);
+          }
+        } else {
+          console.error(result.message);
+          renderNewsItems([]);
+        }
+      } catch (e) {
+        console.error(e);
+        renderNewsItems([]);
+      }
+    }
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 绑定搜索框事件
+      document.querySelector('.search-box button').addEventListener('click', function() {
+        const keyword = document.querySelector('.search-box input').value.trim();
+        if (keyword) {
+          searchNews(keyword);
+        } else {
+          renderNewsItems(newsData);
+        }
+      });
+      
+      // 绑定回车搜索
+      document.querySelector('.search-box input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          document.querySelector('.search-box button').click();
+        }
+      });
+      
+      // 加载资讯列表
+      fetchNews();
+    });
+    
+    // 渲染资讯列表
+    function renderNewsItems(data) {
+      const container = document.getElementById('newsGrid');
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-newspaper"></i>
+            <h3>暂无相关资讯</h3>
+            <p>没有找到匹配的资讯内容</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = data.map(news => {
+        // 检查是否有图片链接
+        let mediaElement = '';
+        if (news.image) {
+          // 检查链接是否为视频
+          const isVideo = news.image.endsWith && news.image.endsWith('.mp4');
+          mediaElement = isVideo ? 
+            `<video src="${news.image}" class="news-image" controls></video>` :
+            `<img src="${news.image}" alt="${news.title}" class="news-image">`;
+        }
+          
+        return `
+          <div class="news-item" onclick="showNewsDetail(${news.id})">
+            ${mediaElement}
+            <div class="news-content">
+              <span class="news-category">${news.category}</span>
+              <h3 class="news-title">${news.title}</h3>
+              <p class="news-summary">${news.summary}</p>
+              <div class="news-meta">
+                <span>${news.author}</span>
+                <span>${news.time}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // 显示资讯详情
+    function showNewsDetail(id) {
+      const news = newsData.find(n => n.id === id);
+      if (!news) return;
+      
+      currentDetail = news;
+      
+      // 检查是否有图片链接
+      let mediaElement = '';
+      if (news.image) {
+        // 检查链接是否为视频
+        const isVideo = news.image.endsWith && news.image.endsWith('.mp4');
+        mediaElement = isVideo ?
+          `<video src="${news.image}" alt="${news.title}" class="detail-image" controls></video>` :
+          `<img src="${news.image}" alt="${news.title}" class="detail-image">`;
+      }
+      
+      const mainContainer = document.querySelector('.news-main');
+      mainContainer.innerHTML = `
+        <button class="back-btn" onclick="backToList()">
+          <i class="fas fa-arrow-left"></i> 返回资讯列表
+        </button>
+        <div class="news-detail">
+          <div class="detail-header">
+            <h2>${news.title}</h2>
+            <div class="detail-meta">
+              <span><i class="fas fa-folder"></i> ${news.category}</span>
+              <span><i class="fas fa-user"></i> ${news.author}</span>
+              <span><i class="fas fa-clock"></i> ${news.time}</span>
+              <span><i class="fas fa-eye"></i> ${news.views} 阅读</span>
+            </div>
+          </div>
+          ${mediaElement}
+          <div class="detail-content">
+            ${news.content}
+          </div>
+        </div>
+      `;
+    }
+    
+    // 返回资讯列表
+    function backToList() {
+      const mainContainer = document.querySelector('.news-main');
+      mainContainer.innerHTML = '<div class="news-grid" id="newsGrid"><div class="loading"><i class="fas fa-spinner"></i><p>正在加载资讯...</p></div></div>';
+      
+      setTimeout(() => {
+        renderNewsItems(newsData);
+      }, 500);
+    }
+    
+    // 搜索资讯
+    function searchNews(keyword) {
+      const filteredData = newsData.filter(news => 
+        news.title.includes(keyword) || 
+        news.category.includes(keyword) || 
+        news.summary.includes(keyword) ||
+        news.content.includes(keyword)
+      );
+      renderNewsItems(filteredData);
+    }
+  </script>
+</body>
+</html>

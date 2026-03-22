@@ -54,8 +54,8 @@ def call_qwen_api(question):
         
         # 创建客户端实例
         client = OpenAI(
-            api_key="sk-cc0a8af819144e0ca7333124f5f3181b",
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            api_key=current_app.config['QWEN_API_KEY'],
+            base_url=current_app.config.get('QWEN_API_URL', "https://dashscope.aliyuncs.com/compatible-mode/v1"),
         )
 
         # 调用千问API

@@ -32,3 +32,12 @@ def verify_token(token, secret_key):
         return False, {'error': '无效的Token'}
     except Exception as e:
         return False, {'error': str(e)}
+
+def get_token_from_request(request):
+    """从请求中获取Token（先后从Header和Cookie中尝试提取）"""
+    token = request.headers.get('Authorization')
+    if token and token.startswith('Bearer '):
+        token = token[7:]
+    if not token:
+        token = request.cookies.get('token')
+    return token

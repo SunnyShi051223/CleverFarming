@@ -8,15 +8,20 @@ import jwt
 
 user_info_bp = Blueprint('user_info', __name__)
 
-# 高德天气API配置 (需要申请API key)
-AMAP_API_KEY = "01e17e6256c8768ad0f7961437bda3fc"  # 请替换为实际的高德API key
+# 高德天气API配置
 AMAP_WEATHER_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
 
 # Token验证装饰器
 def token_required_simple(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.cookies.get('token')
+        from backend.utils import get_token_from_request
+        # 如果从独立运行的 context 调用可能是 utils
+        try:
+            from utils import get_token_from_request
+        except ImportError:
+            pass
+        token = get_token_from_request(request)
         if not token:
             return jsonify({'success': False, 'message': '未登录'}), 401
         
@@ -170,8 +175,10 @@ def get_weather():
         adcode = request.args.get('adcode', '420100')  # 城市编码
         
         # 调用高德天气API
+        from flask import current_app
+        amap_api_key = current_app.config.get('AMAP_API_KEY')
         params = {
-            'key': AMAP_API_KEY,
+            'key': amap_api_key,
             'city': adcode,
             'extensions': 'base'  # base=实况天气, all=预报天气
         }

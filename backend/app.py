@@ -4,8 +4,6 @@ import sys
 import os
 # 优先使用本地包路径，然后才是系统环境中的包
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'packages'))
-# 添加系统路径作为备选
-sys.path.append('C:\\Users\\32874\\AppData\\Local\\Programs\\Python\\Python38\\Lib\\site-packages')
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
@@ -18,6 +16,9 @@ from utils import hash_password, verify_token
 from news_api import news_bp
 from ai_agent import ai_agent_bp
 from user_info_api import user_info_bp
+from farming_api import farming_bp
+from community_api import community_bp
+from disease_api import disease_bp
 
 # 尝试导入bcrypt，如果失败则使用模拟实现
 try:
@@ -43,8 +44,8 @@ except ImportError as e:
             return password
 
 app = Flask(__name__,
-            template_folder='../api',
-            static_folder='../api',
+            template_folder='../frontend',
+            static_folder='../frontend',
             static_url_path='')
 app.config.from_object(Config)
 
@@ -56,6 +57,9 @@ CORS(app, origins=["http://localhost:5000", "http://127.0.0.1:5000"],
 app.register_blueprint(news_bp)
 app.register_blueprint(ai_agent_bp, url_prefix='/api')  # 注册AI问答模块蓝图
 app.register_blueprint(user_info_bp, url_prefix='/api')  # 注册用户信息API蓝图
+app.register_blueprint(farming_bp)  # Farming API
+app.register_blueprint(community_bp)
+app.register_blueprint(disease_bp)
 
 # 处理OPTIONS预检请求
 @app.after_request
@@ -81,7 +85,7 @@ def get_db_connection():
 # 添加根路径路由，渲染登录页面
 @app.route('/')
 def home():
-    return render_template('login.html') # 直接渲染api文件夹下的login.html
+    return render_template('login.html') # 直接渲染frontend文件夹下的login.html
 
 # 农户中心页面路由
 @app.route('/api/farmer.html')
@@ -96,7 +100,7 @@ def disease_identification():
 # 为病虫害识别模块的静态文件添加路由
 @app.route('/api/disease-identification/<path:filename>')
 def disease_identification_static(filename):
-    return send_from_directory('../api/disease-identification', filename)
+    return send_from_directory('../frontend/disease-identification', filename)
 
 @app.route('/api/farming-alert/index.html')
 def farming_alert():
@@ -105,7 +109,7 @@ def farming_alert():
 # 为农事提醒模块的静态文件添加路由
 @app.route('/api/farming-alert/<path:filename>')
 def farming_alert_static(filename):
-    return send_from_directory('../api/farming-alert', filename)
+    return send_from_directory('../frontend/farming-alert', filename)
 
 @app.route('/api/smart-community/index.html')
 def smart_community():
@@ -114,7 +118,7 @@ def smart_community():
 # 为智慧社区模块的静态文件添加路由
 @app.route('/api/smart-community/<path:filename>')
 def smart_community_static(filename):
-    return send_from_directory('../api/smart-community', filename)
+    return send_from_directory('../frontend/smart-community', filename)
 
 @app.route('/api/farming-almanac/index.html')
 def farming_almanac():
@@ -123,7 +127,7 @@ def farming_almanac():
 # 为农事历模块的静态文件添加路由
 @app.route('/api/farming-almanac/<path:filename>')
 def farming_almanac_static(filename):
-    return send_from_directory('../api/farming-almanac', filename)
+    return send_from_directory('../frontend/farming-almanac', filename)
 
 @app.route('/api/agricultural-news/index.html')
 def agricultural_news():
@@ -132,11 +136,11 @@ def agricultural_news():
 # 为农业资讯模块的静态文件添加路由
 @app.route('/api/agricultural-news/<path:filename>')
 def agricultural_news_static(filename):
-    return send_from_directory('../api/agricultural-news', filename)
+    return send_from_directory('../frontend/agricultural-news', filename)
 
 @app.route('/api/daily-farming/<path:filename>')
 def daily_farming_static(filename):
-    return send_from_directory('../api/daily-farming', filename)
+    return send_from_directory('../frontend/daily-farming', filename)
 
 # 测试页面路由
 @app.route('/test')
@@ -273,12 +277,12 @@ def login():
 # 获取用户信息接口
 def token_required(f):
     def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization')
+        from utils import get_token_from_request
+        token = get_token_from_request(request)
         if not token:
             return jsonify({'message': '缺少认证令牌'}), 401
 
         try:
-            token = token.split(" ")[1]  # 提取 Bearer token
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             current_user_id = data['user_id']
         except jwt.ExpiredSignatureError:
@@ -543,7 +547,8 @@ def role_required(roles=None):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            token = request.cookies.get('token')
+            from utils import get_token_from_request
+            token = get_token_from_request(request)
             if not token:
                 return redirect(url_for('home'))
                 
@@ -711,10 +716,95 @@ def get_knowledge_item(payload, item_id):
                 item['updated_at'] = item['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
                 
             return jsonify({'success': True, 'item': item})
-            
     except Exception as e:
         print(f"获取知识点详情失败: {e}")
         return jsonify({'success': False, 'message': '获取知识点详情失败'}), 500
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# 管理员API：获取用户列表
+@app.route('/api/admin/users', methods=['GET'])
+@role_required(roles=['admin'])
+def admin_get_users(payload):
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            sql = "SELECT id, username, role, location, city, crop_type, farm_area, created_at, last_login FROM users ORDER BY id DESC"
+            cursor.execute(sql)
+            users = cursor.fetchall()
+            
+            # 格式化日期
+            for user in users:
+                if user.get('created_at'):
+                    user['created_at'] = user['created_at'].strftime('%Y-%m-%d %H:%M')
+                if user.get('last_login'):
+                    user['last_login'] = user['last_login'].strftime('%Y-%m-%d %H:%M')
+                    
+            return jsonify({'success': True, 'users': users})
+    except Exception as e:
+        print(f"Admin get users failed: {e}")
+        return jsonify({'success': False, 'message': '获取用户列表失败'}), 500
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# 管理员API：获取概览统计
+@app.route('/api/admin/stats', methods=['GET'])
+@role_required(roles=['admin'])
+def admin_get_stats(payload):
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            # 总数
+            cursor.execute("SELECT COUNT(*) as count FROM users")
+            total_users = cursor.fetchone()['count']
+            
+            # 今日新增
+            cursor.execute("SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURDATE()")
+            new_today = cursor.fetchone()['count']
+            
+            # 最近活跃 (24小时内)
+            cursor.execute("SELECT COUNT(*) as count FROM users WHERE last_login >= NOW() - INTERVAL 1 DAY")
+            active_24h = cursor.fetchone()['count']
+            
+            # 各角色数量
+            cursor.execute("SELECT role, COUNT(*) as count FROM users GROUP BY role")
+            roles = cursor.fetchall()
+            
+            return jsonify({
+                'success': True, 
+                'stats': {
+                    'total_users': total_users,
+                    'new_today': new_today,
+                    'active_24h': active_24h,
+                    'roles': roles
+                }
+            })
+    except Exception as e:
+        print(f"Admin get stats failed: {e}")
+        return jsonify({'success': False, 'message': '获取统计数据失败'}), 500
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# 管理员API：删除用户
+@app.route('/api/admin/user/<int:user_id>', methods=['DELETE'])
+@role_required(roles=['admin'])
+def admin_delete_user(payload, user_id):
+    if user_id == payload['user_id']:
+        return jsonify({'success': False, 'message': '不能删除自己'}), 400
+        
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM users WHERE id = %s"
+            cursor.execute(sql, (user_id,))
+            connection.commit()
+            return jsonify({'success': True, 'message': '用户删除成功'})
+    except Exception as e:
+        print(f"Admin delete user failed: {e}")
+        return jsonify({'success': False, 'message': '删除用户失败'}), 500
     finally:
         if 'connection' in locals() and connection:
             connection.close()

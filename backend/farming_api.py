@@ -172,3 +172,24 @@ def get_task_detail(current_user_id, task_id):
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         conn.close()
+
+@farming_bp.route('/api/knowledge/items', methods=['GET'])
+@token_required
+def get_knowledge_items(current_user_id):
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, title, category, summary, content, keywords 
+                FROM knowledge_nodes
+                ORDER BY created_at DESC
+            """)
+            items = cursor.fetchall()
+            return jsonify({
+                'success': True,
+                'data': items
+            })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()

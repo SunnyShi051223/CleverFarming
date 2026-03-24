@@ -5,8 +5,25 @@ import requests
 import pymysql
 from functools import wraps
 import jwt
+from utils import get_beijing_time
 
 user_info_bp = Blueprint('user_info', __name__)
+
+def get_db_connection():
+    from flask import current_app
+    connection = pymysql.connect(
+        host=current_app.config['MYSQL_HOST'],
+        user=current_app.config['MYSQL_USER'],
+        password=current_app.config['MYSQL_PASSWORD'],
+        database=current_app.config['MYSQL_DB'],
+        port=current_app.config['MYSQL_PORT'],
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    # 设置会话时区为北京时间 (UTC+8)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+08:00'")
+    return connection
 
 # 高德天气API配置
 AMAP_WEATHER_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
@@ -15,12 +32,7 @@ AMAP_WEATHER_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
 def token_required_simple(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        from backend.utils import get_token_from_request
-        # 如果从独立运行的 context 调用可能是 utils
-        try:
-            from utils import get_token_from_request
-        except ImportError:
-            pass
+        from utils import get_token_from_request
         token = get_token_from_request(request)
         if not token:
             return jsonify({'success': False, 'message': '未登录'}), 401
@@ -43,15 +55,7 @@ def token_required_simple(f):
 def get_user_profile(user_id):
     """获取用户完整信息"""
     try:
-        from flask import current_app
-        connection = pymysql.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB'],
-            port=current_app.config['MYSQL_PORT'],
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        connection = get_db_connection()
         
         with connection.cursor() as cursor:
             # 查询用户基本信息
@@ -109,16 +113,7 @@ def update_user_profile(user_id):
     """更新用户信息"""
     try:
         data = request.get_json()
-        
-        from flask import current_app
-        connection = pymysql.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB'],
-            port=current_app.config['MYSQL_PORT'],
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        connection = get_db_connection()
         
         with connection.cursor() as cursor:
             # 构建更新语句
@@ -270,15 +265,7 @@ def get_weather():
 def get_user_stats(user_id):
     """获取用户统计信息"""
     try:
-        from flask import current_app
-        connection = pymysql.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB'],
-            port=current_app.config['MYSQL_PORT'],
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        connection = get_db_connection()
         
         with connection.cursor() as cursor:
             stats = {}

@@ -12,7 +12,7 @@ import jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from config import Config
-from utils import hash_password, verify_token
+from utils import hash_password, verify_token, get_beijing_time
 from news_api import news_bp
 from ai_agent import ai_agent_bp
 from user_info_api import user_info_bp
@@ -58,7 +58,7 @@ app.register_blueprint(news_bp)
 app.register_blueprint(ai_agent_bp, url_prefix='/api')  # 注册AI问答模块蓝图
 app.register_blueprint(user_info_bp, url_prefix='/api')  # 注册用户信息API蓝图
 app.register_blueprint(farming_bp)  # Farming API
-app.register_blueprint(community_bp)
+app.register_blueprint(community_bp, url_prefix='/api')
 app.register_blueprint(disease_bp)
 
 # 处理OPTIONS预检请求
@@ -80,6 +80,9 @@ def get_db_connection():
         port=app.config['MYSQL_PORT'],
         cursorclass=pymysql.cursors.DictCursor
     )
+    # 设置会话时区为北京时间 (UTC+8)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+08:00'")
     return connection
 
 # 添加根路径路由，渲染登录页面
@@ -324,8 +327,8 @@ def save_disease_identification_history(current_user_id):
             # 插入历史记录
             sql = """
                 INSERT INTO disease_identification_history 
-                (user_id, disease_name, confidence, symptoms, solutions, image_path, voice_input)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (user_id, disease_name, confidence, symptoms, solutions, image_path, voice_input, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (
                 current_user_id, 
@@ -334,7 +337,8 @@ def save_disease_identification_history(current_user_id):
                 symptoms, 
                 solutions, 
                 image_path,
-                voice_input
+                voice_input,
+                get_beijing_time()
             ))
             
             connection.commit()
@@ -593,7 +597,7 @@ def register():
                 INSERT INTO users (username, password_hash, role, city, crop_type, farm_area, is_initialized, created_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (username, hashed_password, role, city, crop_type, farm_area, is_initialized, datetime.utcnow())
+                (username, hashed_password, role, city, crop_type, farm_area, is_initialized, get_beijing_time())
             )
             
             # 获取新创建的用户ID

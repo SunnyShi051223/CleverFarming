@@ -2,11 +2,12 @@
 from flask import Blueprint, jsonify, request, current_app
 import pymysql
 import jwt
+from utils import get_beijing_time
 
 disease_bp = Blueprint('disease', __name__)
 
 def get_db_connection():
-    return pymysql.connect(
+    connection = pymysql.connect(
         host=current_app.config['MYSQL_HOST'],
         user=current_app.config['MYSQL_USER'],
         password=current_app.config['MYSQL_PASSWORD'],
@@ -15,6 +16,10 @@ def get_db_connection():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
+    # 设置会话时区为北京时间 (UTC+8)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+08:00'")
+    return connection
 
 def token_required(f):
     from functools import wraps
@@ -49,9 +54,9 @@ def save_history(current_user_id):
         with conn.cursor() as cursor:
             cursor.execute("""
                 INSERT INTO disease_identification_history 
-                (user_id, disease_name, confidence, symptoms, solutions) 
-                VALUES (%s, %s, %s, %s, %s)
-            """, (current_user_id, disease_name, confidence, symptoms, solutions))
+                (user_id, disease_name, confidence, symptoms, solutions, created_at) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (current_user_id, disease_name, confidence, symptoms, solutions, get_beijing_time()))
             conn.commit()
             return jsonify({'success': True, 'record_id': cursor.lastrowid})
     except Exception as e:

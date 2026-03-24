@@ -6,7 +6,7 @@ import jwt
 community_bp = Blueprint('community', __name__)
 
 def get_db_connection():
-    return pymysql.connect(
+    connection = pymysql.connect(
         host=current_app.config['MYSQL_HOST'],
         user=current_app.config['MYSQL_USER'],
         password=current_app.config['MYSQL_PASSWORD'],
@@ -15,6 +15,10 @@ def get_db_connection():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
+    # 设置会话时区为北京时间 (UTC+8)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+08:00'")
+    return connection
 
 def token_required(f):
     from functools import wraps
@@ -32,7 +36,7 @@ def token_required(f):
         return f(current_user_id, *args, **kwargs)
     return decorated
 
-@community_bp.route('/api/community/posts', methods=['GET'])
+@community_bp.route('/community/posts', methods=['GET'])
 @token_required
 def get_posts(current_user_id):
     conn = get_db_connection()
@@ -57,7 +61,7 @@ def get_posts(current_user_id):
     finally:
         conn.close()
 
-@community_bp.route('/api/community/posts', methods=['POST'])
+@community_bp.route('/community/posts', methods=['POST'])
 @token_required
 def create_post(current_user_id):
     data = request.json
@@ -76,7 +80,7 @@ def create_post(current_user_id):
     finally:
         conn.close()
 
-@community_bp.route('/api/community/posts/<int:post_id>/like', methods=['POST'])
+@community_bp.route('/community/posts/<int:post_id>/like', methods=['POST'])
 @token_required
 def toggle_like(current_user_id, post_id):
     conn = get_db_connection()
@@ -103,7 +107,7 @@ def toggle_like(current_user_id, post_id):
     finally:
         conn.close()
 
-@community_bp.route('/api/community/posts/<int:post_id>/comments', methods=['GET'])
+@community_bp.route('/community/posts/<int:post_id>/comments', methods=['GET'])
 @token_required
 def get_comments(current_user_id, post_id):
     conn = get_db_connection()
@@ -124,7 +128,7 @@ def get_comments(current_user_id, post_id):
     finally:
         conn.close()
 
-@community_bp.route('/api/community/posts/<int:post_id>/comments', methods=['POST'])
+@community_bp.route('/community/posts/<int:post_id>/comments', methods=['POST'])
 @token_required
 def add_comment(current_user_id, post_id):
     data = request.json

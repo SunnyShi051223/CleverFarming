@@ -2,11 +2,12 @@
 from flask import Blueprint, jsonify, request, current_app
 import pymysql
 import jwt
+from utils import get_beijing_time
 
 farming_bp = Blueprint('farming', __name__)
 
 def get_db_connection():
-    return pymysql.connect(
+    connection = pymysql.connect(
         host=current_app.config['MYSQL_HOST'],
         user=current_app.config['MYSQL_USER'],
         password=current_app.config['MYSQL_PASSWORD'],
@@ -15,6 +16,10 @@ def get_db_connection():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
+    # 设置会话时区为北京时间 (UTC+8)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+08:00'")
+    return connection
 
 def token_required(f):
     from functools import wraps
@@ -131,8 +136,7 @@ def add_task(current_user_id):
     location = data.get('location', '')
     
     # We will assume today's date for scheduled_date
-    import datetime
-    scheduled_date = datetime.date.today().strftime('%Y-%m-%d')
+    scheduled_date = get_beijing_time().date().strftime('%Y-%m-%d')
     
     if not title:
         return jsonify({'success': False, 'message': '标题不能为空'}), 400

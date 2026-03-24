@@ -1,6 +1,11 @@
 # utils.py
 import bcrypt
 import jwt
+from datetime import datetime, timezone, timedelta
+
+def get_beijing_time():
+    """获取北京时间 (UTC+8)"""
+    return datetime.now(timezone(timedelta(hours=8)))
 
 def hash_password(password):
     """对密码进行哈希处理"""

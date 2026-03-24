@@ -3,6 +3,7 @@ import pymysql
 import bcrypt
 from datetime import datetime
 from config import Config
+from utils import get_beijing_time
 
 def init_database():
     """初始化数据库和表结构"""
@@ -32,6 +33,9 @@ def init_database():
             port=Config.MYSQL_PORT,
             charset='utf8mb4'
         )
+        # 设置会话时区为北京时间 (UTC+8)
+        with connection.cursor() as cursor:
+            cursor.execute("SET time_zone = '+08:00'")
         
         with connection.cursor() as cursor:
             # 创建用户表
@@ -184,7 +188,7 @@ def init_database():
                 
                 # 插入示例任务数据
                 from datetime import date, time
-                today = date.today()
+                today = get_beijing_time().date()
                 
                 sample_tasks = [
                     (farmer_id, '小麦病虫害防治', '近期发现小麦叶片出现锈病症状，需要立即进行药剂喷洒防治。建议使用三唑酮或丙环唑，注意用药浓度和安全间隔期。', 

@@ -434,11 +434,11 @@
     <div class="news-container">
       <div class="news-header">
         <h2 class="module-title">农情速递</h2>
-        <p class="module-description">最新农业资讯、政策解读、市场动态一网打尽</p>
+        <p class="module-description">为您推送最新的农业要闻与专业的农事指导建议</p>
         
         <div class="news-actions">
           <div class="search-box">
-            <input type="text" placeholder="搜索农业资讯...">
+            <input type="text" placeholder="搜索农业要闻或农事指导...">
             <button><i class="fas fa-search"></i> 搜索</button>
           </div>
         </div>
@@ -462,33 +462,18 @@
             <ul class="popular-news" id="popularNews">
               <li>
                 <a href="javascript:void(0)">
-                  <div class="title">2025年中央一号文件发布，全面推进乡村振兴</div>
-                  <div class="meta">2025-02-15 · 1.2万阅读</div>
-                </a>
-              </li>
-              <li>
-                <a href="javascript:void(0)">
-                  <div class="title">全国春耕生产形势分析及技术指导意见</div>
-                  <div class="meta">2025-03-10 · 8500阅读</div>
-                </a>
-              </li>
-              <li>
-                <a href="javascript:void(0)">
-                  <div class="title">农产品价格指数持续上涨，市场供需分析</div>
-                  <div class="meta">2025-04-05 · 7200阅读</div>
+                  <div class="title">加载中...</div>
+                  <div class="meta">请稍候</div>
                 </a>
               </li>
             </ul>
           </div>
           
           <div class="sidebar-section">
-            <h3>热门标签</h3>
+            <h3>分类浏览</h3>
             <div class="tags">
-              <span class="tag">乡村振兴</span>
-              <span class="tag">春耕生产</span>
-              <span class="tag">农产品价格</span>
-              <span class="tag">政策解读</span>
-              <span class="tag">农业科技</span>
+              <span class="tag" onclick="searchNews('农业要闻')">农业要闻</span>
+              <span class="tag" onclick="searchNews('农事指导')">农事指导</span>
             </div>
           </div>
         </div>
@@ -516,6 +501,8 @@
           } else {
             renderNewsItems(newsData);
           }
+          // 同时更新热门资讯
+          updatePopularNews(newsData);
         } else {
           console.error(result.message);
           renderNewsItems([]);
@@ -524,6 +511,22 @@
         console.error(e);
         renderNewsItems([]);
       }
+    }
+    
+    // 更新热门资讯
+    function updatePopularNews(data) {
+      const container = document.getElementById('popularNews');
+      // 按时间排序，取最新的3条
+      const sortedNews = [...data].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+      
+      container.innerHTML = sortedNews.map(news => `
+        <li>
+          <a href="javascript:void(0)" onclick="showNewsDetail(${news.id})">
+            <div class="title">${news.title}</div>
+            <div class="meta">${news.date} · ${Math.floor(Math.random() * 5000 + 5000)}阅读</div>
+          </a>
+        </li>
+      `).join('');
     }
     
     // 初始化页面
@@ -567,12 +570,8 @@
       container.innerHTML = data.map(news => {
         // 检查是否有图片链接
         let mediaElement = '';
-        if (news.image) {
-          // 检查链接是否为视频
-          const isVideo = news.image.endsWith && news.image.endsWith('.mp4');
-          mediaElement = isVideo ? 
-            `<video src="${news.image}" class="news-image" controls></video>` :
-            `<img src="${news.image}" alt="${news.title}" class="news-image">`;
+        if (news.images && news.images.length > 0) {
+          mediaElement = `<img src="${news.images[0]}" alt="${news.title}" class="news-image">`;
         }
           
         return `
@@ -581,10 +580,10 @@
             <div class="news-content">
               <span class="news-category">${news.category}</span>
               <h3 class="news-title">${news.title}</h3>
-              <p class="news-summary">${news.summary}</p>
+              <p class="news-summary">${news.content.substring(0, 100)}...</p>
               <div class="news-meta">
-                <span>${news.author}</span>
-                <span>${news.time}</span>
+                <span>农业农村部</span>
+                <span>${news.date}</span>
               </div>
             </div>
           </div>
@@ -593,43 +592,28 @@
     }
     
     // 显示资讯详情
-    function showNewsDetail(id) {
-      const news = newsData.find(n => n.id === id);
-      if (!news) return;
-      
-      currentDetail = news;
-      
-      // 检查是否有图片链接
-      let mediaElement = '';
-      if (news.image) {
-        // 检查链接是否为视频
-        const isVideo = news.image.endsWith && news.image.endsWith('.mp4');
-        mediaElement = isVideo ?
-          `<video src="${news.image}" alt="${news.title}" class="detail-image" controls></video>` :
-          `<img src="${news.image}" alt="${news.title}" class="detail-image">`;
+    async function showNewsDetail(id) {
+      try {
+        // 从API获取新闻详情
+        const response = await fetch(`/api/news/detail/${id}`);
+        const result = await response.json();
+        
+        if (result.code === 200) {
+          const news = result.data;
+          
+          // 直接跳转到原始URL页面
+          if (news.url) {
+            // 在新窗口打开原始新闻页面
+            window.open(news.url, '_blank');
+          } else {
+            console.error('新闻URL不存在');
+          }
+        } else {
+          console.error(result.message);
+        }
+      } catch (e) {
+        console.error(e);
       }
-      
-      const mainContainer = document.querySelector('.news-main');
-      mainContainer.innerHTML = `
-        <button class="back-btn" onclick="backToList()">
-          <i class="fas fa-arrow-left"></i> 返回资讯列表
-        </button>
-        <div class="news-detail">
-          <div class="detail-header">
-            <h2>${news.title}</h2>
-            <div class="detail-meta">
-              <span><i class="fas fa-folder"></i> ${news.category}</span>
-              <span><i class="fas fa-user"></i> ${news.author}</span>
-              <span><i class="fas fa-clock"></i> ${news.time}</span>
-              <span><i class="fas fa-eye"></i> ${news.views} 阅读</span>
-            </div>
-          </div>
-          ${mediaElement}
-          <div class="detail-content">
-            ${news.content}
-          </div>
-        </div>
-      `;
     }
     
     // 返回资讯列表

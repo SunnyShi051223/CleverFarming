@@ -162,16 +162,12 @@
       height: 100%;
     }
     
-    .alert-item.weather::before {
-      background: linear-gradient(to bottom, #2196f3, #0d47a1);
-    }
-    
-    .alert-item.pest::before {
+    .alert-item.alert::before {
       background: linear-gradient(to bottom, #f44336, #b71c1c);
     }
     
-    .alert-item.farming::before {
-      background: linear-gradient(to bottom, #4caf50, #1b5e20);
+    .alert-item.news::before {
+      background: linear-gradient(to bottom, #ff9800, #f57c00);
     }
     
     .alert-item:hover {
@@ -193,19 +189,14 @@
       font-weight: 600;
     }
     
-    .alert-type.weather {
-      background-color: #e3f2fd;
-      color: #0d47a1;
-    }
-    
-    .alert-type.pest {
+    .alert-type.alert {
       background-color: #ffebee;
       color: #b71c1c;
     }
     
-    .alert-type.farming {
-      background-color: #e8f5e9;
-      color: #1b5e20;
+    .alert-type.news {
+      background-color: #fff3e0;
+      color: #e65100;
     }
     
     .alert-date {
@@ -323,7 +314,7 @@
   <div class="container">
     <div class="header">
       <h1>
-        <i class="fas fa-bell"></i> 智禾慧农 - 农时预警
+        <i class="fas fa-bell"></i> 智禾慧农 - 消息推送
         <span class="unread-count" id="unreadCount">0</span>
       </h1>
       <a href="/api/farmer.html" class="back-home-btn">
@@ -333,16 +324,16 @@
 
     <div class="alert-container">
       <h2 class="module-title">农时预警</h2>
-      <p class="module-description">实时获取天气预警、病虫害预警和农事提醒</p>
+      <p class="module-description">实时获取农业气象、土壤墒情、病虫害预警，保障农业生产安全</p>
       
       <div class="alert-filters">
         <div class="filter-group">
-          <label>预警类型：</label>
+          <label>细分类型：</label>
           <div class="filter-options">
-            <button class="filter-btn active" data-type="all">全部</button>
-            <button class="filter-btn" data-type="weather">天气预警</button>
-            <button class="filter-btn" data-type="pest">病虫害预警</button>
-            <button class="filter-btn" data-type="farming">农事提醒</button>
+            <button class="filter-btn active" data-subtype="all">全部</button>
+            <button class="filter-btn" data-subtype="nyqx">农业气象</button>
+            <button class="filter-btn" data-subtype="trsq">土壤墒情</button>
+            <button class="filter-btn" data-subtype="zwbch">植物病虫害</button>
           </div>
         </div>
         <div class="filter-group">
@@ -358,7 +349,7 @@
       <div class="alert-list" id="alertList">
         <div class="loading">
           <i class="fas fa-spinner"></i>
-          <p>正在加载预警信息...</p>
+          <p>正在加载信息...</p>
         </div>
       </div>
     </div>
@@ -374,10 +365,17 @@
     // 从服务器获取预警数据
     async function fetchAlerts() {
       try {
-        const response = await fetch('/api/alerts');
+        // 构建查询参数
+        const activeSubtypeFilter = document.querySelector('.filter-btn[data-subtype].active');
+        const subtype = activeSubtypeFilter ? activeSubtypeFilter.dataset.subtype : 'all';
+        
+        let url = '/api/alert/list?';
+        if (subtype !== 'all') url += `subtype=${subtype}&`;
+        
+        const response = await fetch(url);
         const result = await response.json();
         
-        if (result.success) {
+        if (result.code === 200) {
           alertData = result.data;
           
           // 同步数据库中的已读状态到本地
@@ -396,51 +394,44 @@
           applyFilters();
           updateUnreadCount();
         } else {
-          console.error('获取预警信息失败:', result.message);
+          console.error('获取信息失败:', result.message);
           renderAlertList([]);
         }
       } catch (error) {
-        console.error('获取预警信息出错:', error);
+        console.error('获取信息出错:', error);
         renderAlertList([]);
       }
     }
     
     // 初始化页面
     document.addEventListener('DOMContentLoaded', function() {
-      // 加载预警列表
+      // 加载列表
       fetchAlerts();
       
       // 绑定筛选按钮事件
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           // 更新活动状态（仅在同一组内）
-          const isTypeFilter = this.dataset.type !== undefined;
+          const isSubtypeFilter = this.dataset.subtype !== undefined;
           const isReadFilter = this.dataset.read !== undefined;
           
-          if (isTypeFilter) {
-            document.querySelectorAll('.filter-btn[data-type]').forEach(b => b.classList.remove('active'));
+          if (isSubtypeFilter) {
+            document.querySelectorAll('.filter-btn[data-subtype]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            fetchAlerts();
           } else if (isReadFilter) {
             document.querySelectorAll('.filter-btn[data-read]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            applyFilters();
           }
-          
-          this.classList.add('active');
-          
-          // 重新应用筛选
-          applyFilters();
         });
       });
       
     });
     
-    // 应用所有筛选条件
+    // 应用本地筛选条件（主要是阅读状态）
     function applyFilters() {
       let filteredData = alertData;
-      
-      // 类型筛选
-      const activeTypeFilter = document.querySelector('.filter-btn[data-type].active');
-      if (activeTypeFilter && activeTypeFilter.dataset.type !== 'all') {
-        filteredData = filteredData.filter(alert => alert.type === activeTypeFilter.dataset.type);
-      }
       
       // 阅读状态筛选
       const activeReadFilter = document.querySelector('.filter-btn[data-read].active');
@@ -456,7 +447,7 @@
       renderAlertList(filteredData);
     }
     
-    // 渲染预警列表
+    // 渲染列表
     function renderAlertList(data) {
       const alertList = document.getElementById('alertList');
       
@@ -464,8 +455,8 @@
         alertList.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-bell-slash"></i>
-            <h3>暂无预警信息</h3>
-            <p>当前没有相关的预警信息</p>
+            <h3>暂无信息</h3>
+            <p>当前没有相关的信息内容</p>
           </div>
         `;
         return;
@@ -473,25 +464,26 @@
       
       alertList.innerHTML = data.map(alert => {
         const isRead = readAlerts.includes(alert.id);
+        const typeLabel = alert.alert_type === 'news' ? '农情速递' : '农时预警';
+        const subtypeLabel = alert.subtype_name || alert.alert_subtype;
+        
+        // 生成详情页URL
+        const url = `detail.html?id=${alert.id}`;
         return `
-        <div class="alert-item ${alert.type} ${isRead ? 'read' : ''}">
+        <div class="alert-item ${alert.alert_type} ${isRead ? 'read' : ''}" onclick="window.location.href='${url}'" style="cursor: pointer;">
           <div class="alert-header">
-            <span class="alert-type ${alert.type}">
-              ${alert.type === 'weather' ? '天气预警' : alert.type === 'pest' ? '病虫害预警' : '农事提醒'}
+            <span class="alert-type ${alert.alert_type}">
+              ${typeLabel} · ${subtypeLabel}
               ${isRead ? '<span class="read-badge">已读</span>' : ''}
             </span>
-            <span class="alert-date">${alert.date}</span>
+            <span class="alert-date">${alert.created_at}</span>
           </div>
           <h3 class="alert-title">${alert.title}</h3>
-          <p class="alert-content">${alert.content}</p>
+          <p class="alert-content">${alert.content.substring(0, 100)}${alert.content.length > 100 ? '...' : ''}</p>
           <div class="alert-actions">
             ${isRead ? 
-              `<button class="action-btn mark-unread" onclick="markAsUnread(${alert.id})">
-                <i class="fas fa-undo"></i> 标为未读
-              </button>` :
-              `<button class="action-btn" onclick="markAsRead(${alert.id})">
-                <i class="fas fa-check"></i> 标为已读
-              </button>`
+              `<button class="action-btn mark-unread" onclick="event.stopPropagation(); markAsUnread(${alert.id})"><i class="fas fa-undo"></i> 标为未读</button>` :
+              `<button class="action-btn" onclick="event.stopPropagation(); markAsRead(${alert.id})"><i class="fas fa-check"></i> 标为已读</button>`
             }
           </div>
         </div>
@@ -509,14 +501,12 @@
     async function markAsRead(id) {
       if (!readAlerts.includes(id)) {
         try {
-          const response = await fetch(`/api/alerts/${id}/read`, { method: 'PUT' });
-          const result = await response.json();
-          if (result.success) {
-            readAlerts.push(id);
-            localStorage.setItem('readAlerts', JSON.stringify(readAlerts));
-            applyFilters();
-            updateUnreadCount();
-          }
+          // 这里可以添加标记已读的API调用
+          // 目前我们的API还没有实现标记已读功能，可以后续添加
+          readAlerts.push(id);
+          localStorage.setItem('readAlerts', JSON.stringify(readAlerts));
+          applyFilters();
+          updateUnreadCount();
         } catch (error) {
           console.error('标记已读失败:', error);
         }

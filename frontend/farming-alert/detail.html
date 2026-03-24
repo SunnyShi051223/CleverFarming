@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预警详情 - 智禾慧农</title>
+  <style>
+    :root {
+      --primary-green: #2e7d32;
+      --secondary-green: #4caf50;
+      --accent-green: #a5d6a7;
+      --light-bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: url("BG.jpg");
+      background-size: cover;
+      font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+      color: white;
+      padding: 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+    }
+    .header h1 i {
+      margin-right: 12px;
+    }
+    .back-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .alert-detail {
+      background-color: var(--card-bg);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+    }
+    .alert-header {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .alert-type {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .alert-type.weather {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+    }
+    .alert-type.pest {
+      background-color: #ffebee;
+      color: #b71c1c;
+    }
+    .alert-type.farming {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+    }
+    .alert-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      color: var(--text-light);
+    }
+    .alert-date {
+      font-size: 1rem;
+    }
+    .alert-title {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+    }
+    .alert-content {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-dark);
+    }
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+    .loading i {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+    .error i {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #f44336;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>
+        <i class="fas fa-bell"></i> 智禾慧农 - 预警详情
+      </h1>
+      <a href="index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> 返回预警列表
+      </a>
+    </div>
+
+    <div class="alert-detail" id="alertDetail">
+      <div class="loading">
+        <i class="fas fa-spinner"></i>
+        <p>正在加载预警详情...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 获取URL中的预警ID
+    function getAlertId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+    }
+
+    // 从服务器获取预警详情
+    async function fetchAlertDetail() {
+      const alertId = getAlertId();
+      if (!alertId) {
+        renderError('未找到预警ID');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/alert/detail/${alertId}`);
+        const result = await response.json();
+
+        if (result.code === 200) {
+          // 尝试从预警内容中提取新闻标题并跳转到对应新闻链接
+          await redirectToNewsLink(result.data);
+        } else {
+          renderError(result.message || '获取预警详情失败');
+        }
+      } catch (error) {
+        console.error('获取预警详情出错:', error);
+        renderError('网络错误，请稍后重试');
+      }
+    }
+
+    // 从预警内容中提取新闻标题并跳转到对应新闻链接
+    async function redirectToNewsLink(alert) {
+      try {
+        // 从预警内容中提取新闻标题
+        // 预警内容格式: 【系统智能推荐】基于您的种植作物(小麦)与所在地区(北京)，为您精选资讯：2026年冬小麦增施肥促壮苗技术意见
+        const content = alert.content;
+        const newsTitleMatch = content.match(/为您精选资讯：(.+)$/);
+        
+        if (newsTitleMatch && newsTitleMatch[1]) {
+          const newsTitle = newsTitleMatch[1];
+          console.log('提取到新闻标题:', newsTitle);
+          
+          // 调用新闻API查找对应新闻
+          const newsResponse = await fetch('/api/news/list');
+          const newsResult = await newsResponse.json();
+          
+          if (newsResult.code === 200) {
+            // 查找匹配的新闻
+            const matchedNews = newsResult.data.find(news => 
+              news.title.includes(newsTitle) || newsTitle.includes(news.title)
+            );
+            
+            if (matchedNews && matchedNews.url) {
+              // 直接使用新闻列表中的URL字段
+              console.log('找到新闻链接:', matchedNews.url);
+              // 跳转到新闻链接
+              window.location.href = matchedNews.url;
+              return;
+            }
+          }
+        }
+        
+        // 如果没有找到新闻链接，显示预警详情
+        renderAlertDetail(alert);
+      } catch (error) {
+        console.error('查找新闻链接出错:', error);
+        // 出错时显示预警详情
+        renderAlertDetail(alert);
+      }
+    }
+
+    // 渲染预警详情
+    function renderAlertDetail(alert) {
+      const alertDetail = document.getElementById('alertDetail');
+      
+      // 类型映射
+      const typeMap = {
+        'weather': '农业气象',
+        'pest': '植物病虫害',
+        'farming': '土壤墒情'
+      };
+      const typeText = typeMap[alert.alert_type] || alert.alert_type;
+
+      alertDetail.innerHTML = `
+        <div class="alert-header">
+          <span class="alert-type ${alert.alert_type}">${typeText}</span>
+          <div class="alert-meta">
+            <span class="alert-date">发布时间：${alert.created_at}</span>
+          </div>
+          <h2 class="alert-title">${alert.title}</h2>
+        </div>
+        <div class="alert-content">${alert.content}</div>
+      `;
+    }
+
+    // 渲染错误信息
+    function renderError(message) {
+      const alertDetail = document.getElementById('alertDetail');
+      alertDetail.innerHTML = `
+        <div class="error">
+          <i class="fas fa-exclamation-circle"></i>
+          <h3>出错了</h3>
+          <p>${message}</p>
+          <a href="index.html" class="back-btn" style="display: inline-flex; margin-top: 20px;">
+            <i class="fas fa-arrow-left"></i> 返回预警列表
+          </a>
+        </div>
+      `;
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchAlertDetail();
+    });
+  </script>
+</body>
+</html>

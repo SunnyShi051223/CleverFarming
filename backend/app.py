@@ -2,8 +2,8 @@
 # 推荐使用命令: C:\Users\32874\AppData\Local\Programs\Python\Python38\python.exe app.py
 import sys
 import os
-# 优先使用本地包路径，然后才是系统环境中的包
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'packages'))
+# 不优先使用本地包路径，直接使用系统环境中的包
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'packages'))
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
@@ -19,6 +19,7 @@ from user_info_api import user_info_bp
 from farming_api import farming_bp
 from community_api import community_bp
 from disease_api import disease_bp
+from alert_api import alert_bp
 
 # 尝试导入bcrypt，如果失败则使用模拟实现
 try:
@@ -55,6 +56,7 @@ CORS(app, origins=["http://localhost:5000", "http://127.0.0.1:5000"],
 
 # 注册新闻API蓝图
 app.register_blueprint(news_bp)
+app.register_blueprint(alert_bp, url_prefix='/api/alert')  # 注册预警API蓝图
 app.register_blueprint(ai_agent_bp, url_prefix='/api')  # 注册AI问答模块蓝图
 app.register_blueprint(user_info_bp, url_prefix='/api')  # 注册用户信息API蓝图
 app.register_blueprint(farming_bp)  # Farming API
@@ -762,7 +764,8 @@ def get_knowledge_items(payload):
             
             return jsonify({
                 'success': True, 
-                'items': items,
+                'data': items,
+                'items': items, # 保持兼容性
                 'total': total,
                 'page': page,
                 'total_pages': (total + limit - 1) // limit,

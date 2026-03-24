@@ -31,7 +31,8 @@ def init_database():
             password=Config.MYSQL_PASSWORD,
             database=Config.MYSQL_DB,
             port=Config.MYSQL_PORT,
-            charset='utf8mb4'
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
         )
         # 设置会话时区为北京时间 (UTC+8)
         with connection.cursor() as cursor:
@@ -92,14 +93,16 @@ def init_database():
             """)
             print("病虫害识别历史记录表创建成功或已存在")
             
-            # 创建农事预警表
+            # 创建农事预警表 (先删除以更新架构)
+            cursor.execute("DROP TABLE IF EXISTS farming_alerts")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS farming_alerts (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     user_id INT NOT NULL,
-                    alert_type ENUM('weather', 'pest', 'farming') NOT NULL COMMENT '预警类型',
-                    title VARCHAR(200) NOT NULL COMMENT '预警标题',
-                    content TEXT NOT NULL COMMENT '预警内容',
+                    alert_type ENUM('news', 'alert') NOT NULL COMMENT '主要类型: news-农情速递, alert-农时预警',
+                    alert_subtype VARCHAR(20) NOT NULL COMMENT '子类型: nyyw, nszd, nyqx, trsq, zwbch',
+                    title VARCHAR(200) NOT NULL COMMENT '标题',
+                    content TEXT NOT NULL COMMENT '内容',
                     priority ENUM('high', 'medium', 'low') DEFAULT 'medium' COMMENT '优先级',
                     is_read BOOLEAN DEFAULT FALSE COMMENT '是否已读',
                     location VARCHAR(100) COMMENT '地区',
@@ -108,6 +111,7 @@ def init_database():
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                     INDEX idx_user_id (user_id),
                     INDEX idx_is_read (is_read),
+                    INDEX idx_alert_type (alert_type),
                     INDEX idx_created_at (created_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             """)
@@ -137,11 +141,49 @@ def init_database():
             """)
             print("每日任务表创建成功或已存在")
             
-            # 检查是否有默认用户，如果没有则创建
-            cursor.execute("SELECT COUNT(*) FROM users")
-            user_count = cursor.fetchone()[0]
+            # 创建农产品资讯表 (用于农情速递)
+            cursor.execute("DROP TABLE IF EXISTS agri_news_articles")
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS agri_news_articles (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nid VARCHAR(50) NOT NULL COMMENT '资讯唯一编号',
+                    title VARCHAR(255) NOT NULL COMMENT '文章标题',
+                    url VARCHAR(500) NOT NULL COMMENT '原文链接(唯一)',
+                    category ENUM('nyqx', 'nszd', 'trsq', 'zwbch', 'nyyw') NOT NULL COMMENT '分类',
+                    entities VARCHAR(255) COMMENT '提取的实体特征',
+                    publish_time DATETIME COMMENT '网站发布时间',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE INDEX idx_url (url),
+                    INDEX idx_category (category),
+                    INDEX idx_publish_time (publish_time)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            """)
+            print("农产品资讯表创建成功")
             
-            if user_count == 0:
+            # 种子数据：农产品资讯
+            news_articles = [
+                (1, 'N_61502b1c', '青藏高原东部多雨雪天气 南方阴雨天气持续', 'http://www.agri.cn/sc/nyqx/202603/t20260324_8822055.htm', 'nyqx', '', '2026-03-24 12:00:00'),
+                (2, 'N_08568298', '南方地区持续阴雨  青藏高原东部多雨雪', 'http://www.agri.cn/sc/nyqx/202603/t20260324_8822054.htm', 'nyqx', '', '2026-03-24 12:00:00'),
+                (11, 'N_508aab26', '2026年南方早稻生产技术意见', 'http://www.agri.cn/sc/nszd/202603/t20260313_8818780.htm', 'nszd', '', '2026-03-13 12:00:00'),
+                (14, 'N_54ba78ba', '2026年冬小麦增施肥促壮苗技术意见', 'http://www.agri.cn/sc/nszd/202602/t20260214_8812660.htm', 'nszd', '小麦,施肥', '2026-02-14 12:00:00'),
+                (41, 'N_d6f4d3c3', '全省墒情整体适宜  分类施策促苗转化升级', 'http://www.agri.cn/sc/zxjc/trsq/202603/t20260302_8815880.htm', 'trsq', '墒情', '2026-03-02 12:00:00'),
+                (51, 'N_22ebe2a5', '2026年全国油菜重大病虫害发生趋势预报', 'http://www.agri.cn/sc/zxjc/zwbch/202603/t20260302_8815881.htm', 'zwbch', '病虫害,虫害', '2026-03-02 12:00:00'),
+                (101, 'N_c9e51f4f', '中国—巴西农业分委会第七次会议在京召开', 'http://www.agri.cn/zx/nyyw/202603/t20260324_8822164.htm', 'nyyw', '', '2026-03-24 12:00:00'),
+                (102, 'N_3e705683', '农业农村部部署2026年“绿剑护粮安”执法行动', 'http://www.agri.cn/zx/nyyw/202603/t20260324_8822132.htm', 'nyyw', '', '2026-03-24 12:00:00')
+            ]
+            
+            for article in news_articles:
+                cursor.execute("""
+                    INSERT INTO agri_news_articles (id, nid, title, url, category, entities, publish_time)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, article)
+            print("农产品资讯种子数据插入成功")
+            
+            # 检查是否有默认用户，如果没有则创建
+            cursor.execute("SELECT id FROM users WHERE role = 'user' LIMIT 1")
+            farmer_row = cursor.fetchone()
+            
+            if not farmer_row:
                 # 创建默认管理员用户
                 admin_password = "admin123"
                 admin_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -161,58 +203,46 @@ def init_database():
                 """, ("farmer", farmer_hash, "user", "北京市朝阳区", "北京", "小麦", 50.00, 
                      "https://ts1.tc.mm.bing.net/th/id/OIP-C.FZ6GQ0UcHCLgdPoHx-4UlgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"))
                 
-                print("默认用户创建成功:")
-                print("- 管理员: admin / admin123")
-                print("- 农户: farmer / farmer123")
+                print("默认用户创建成功")
                 
-                # 获取farmer用户ID
-                cursor.execute("SELECT id FROM users WHERE username = 'farmer'")
-                farmer_id = cursor.fetchone()[0]
-                
-                # 插入示例预警数据
-                sample_alerts = [
-                    (farmer_id, 'weather', '暴雨蓝色预警', '预计未来24小时内将有大到暴雨，请注意防范可能引发的洪涝灾害，及时疏通排水沟渠。', 'high', '北京市'),
-                    (farmer_id, 'pest', '稻飞虱虫害预警', '近期气温适宜，稻飞虱繁殖加快，请及时检查田间虫情，必要时进行药剂防治。', 'medium', '北京市'),
-                    (farmer_id, 'farming', '水稻分蘖期管理提醒', '当前正值水稻分蘖期，需保持浅水层，适时追施分蘖肥，促进有效分蘖。', 'low', '北京市'),
-                    (farmer_id, 'weather', '高温橙色预警', '未来一周将持续高温天气，最高气温可达37℃以上，请注意防暑降温，合理安排农事活动。', 'high', '北京市'),
-                    (farmer_id, 'pest', '玉米螟虫害预警', '近期发现玉米螟幼虫活动频繁，请及时检查玉米心叶，发现虫害立即防治。', 'medium', '北京市')
-                ]
-                
-                for alert in sample_alerts:
-                    cursor.execute("""
-                        INSERT INTO farming_alerts (user_id, alert_type, title, content, priority, location)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    """, alert)
-                
-                print("示例预警数据插入成功")
-                
-                # 插入示例任务数据
+                # 获取新创建的farmer ID
+                cursor.execute("SELECT id FROM users WHERE role = 'user' LIMIT 1")
+                farmer_row = cursor.fetchone()
+
+            farmer_id = farmer_row['id']
+            
+            # --- 插入示例预警数据 ---
+            sample_alerts = [
+                (farmer_id, 'news', 'nyyw', '2024年春耕备耕工作全面展开', '部委发布最新春耕指导意见，要求各省落实粮食安全责任制，确保种子肥料供应充足。', 'medium', '全国'),
+                (farmer_id, 'news', 'nszd', '小麦拔节期田间管理方案', '当前小麦陆续进入拔节期，需重点抓好追肥、灌溉和化控防倒伏工作。建议亩施尿素10公斤。', 'high', '北京市'),
+                (farmer_id, 'alert', 'nyqx', '暴雨蓝色预警', '预计未来24小时内将有大到暴雨，请注意防范可能引发的洪涝灾害，及时疏通排水沟渠。', 'high', '北京市'),
+                (farmer_id, 'alert', 'trsq', '农田墒情监测报告', '近期降雨偏少，东区田块0-20cm土层含水量降至15%，处于轻度干旱状态，建议适时补充灌溉。', 'medium', '东区田块'),
+                (farmer_id, 'alert', 'zwbch', '稻飞虱虫害红色预警', '近期气温适宜，稻飞虱繁殖加快，田间百丛虫量已达2000头，请立即进行药剂防治。', 'high', '北京市')
+            ]
+            
+            for alert in sample_alerts:
+                cursor.execute("""
+                    INSERT INTO farming_alerts (user_id, alert_type, alert_subtype, title, content, priority, location)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, alert)
+            print("示例预警数据插入成功")
+            
+            # --- 检查并插入示例任务数据 ---
+            cursor.execute("SELECT COUNT(*) as count FROM daily_tasks WHERE user_id = %s", (farmer_id,))
+            if cursor.fetchone()['count'] == 0:
                 from datetime import date, time
                 today = get_beijing_time().date()
-                
                 sample_tasks = [
-                    (farmer_id, '小麦病虫害防治', '近期发现小麦叶片出现锈病症状，需要立即进行药剂喷洒防治。建议使用三唑酮或丙环唑，注意用药浓度和安全间隔期。', 
-                     'pest_control', 'high', 'pending', today, time(8, 0), '东区田块'),
-                    (farmer_id, '灌溉作业', '根据土壤墒情监测，西区田块需要进行灌溉。预计灌溉时间2小时，注意控制水量，避免积水。', 
-                     'irrigation', 'medium', 'pending', today, time(14, 0), '西区田块'),
-                    (farmer_id, '追肥作业', '小麦进入拔节期，需要追施拔节肥。建议每亩施用尿素10-15公斤，结合灌溉进行。', 
-                     'fertilization', 'low', 'pending', today, time(16, 0), '南区田块'),
-                    (farmer_id, '田间巡查', '对所有田块进行日常巡查，检查作物生长情况和病虫害发生情况。', 
-                     'inspection', 'low', 'completed', today, time(6, 0), '全部田块')
+                    (farmer_id, '小麦病虫害防治', '近期发现小麦叶片出现锈病症状，需要立即进行药剂喷洒防治。', 'pest_control', 'high', 'pending', today, time(8, 0), '东区田块'),
+                    (farmer_id, '灌溉作业', '根据土壤墒情监测，西区田块需要进行灌溉。', 'irrigation', 'medium', 'pending', today, time(14, 0), '西区田块')
                 ]
-                
                 for task in sample_tasks:
-                    cursor.execute("""
-                        INSERT INTO daily_tasks (user_id, title, description, task_type, priority, status, 
-                                                scheduled_date, scheduled_time, location)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, task)
-                
+                    cursor.execute("INSERT INTO daily_tasks (user_id, title, description, task_type, priority, status, scheduled_date, scheduled_time, location) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", task)
                 print("示例任务数据插入成功")
             
             # 插入一些示例知识数据
-            cursor.execute("SELECT COUNT(*) FROM knowledge_nodes")
-            knowledge_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) as count FROM knowledge_nodes")
+            knowledge_count = cursor.fetchone()['count']
             
             if knowledge_count == 0:
                 sample_knowledge = [
@@ -362,6 +392,8 @@ def init_database():
             print("数据库初始化完成！")
             
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"数据库初始化失败: {str(e)}")
         return False
     finally:

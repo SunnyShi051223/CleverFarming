@@ -1,7 +1,29 @@
 # utils.py
-import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
+
+# 尝试导入bcrypt，如果失败则使用模拟实现
+try:
+    import bcrypt
+except ImportError as e:
+    print(f"Warning: bcrypt import failed: {e}")
+    print("Using simulated bcrypt implementation for development")
+    
+    # 模拟bcrypt实现
+    class MockBcrypt:
+        @staticmethod
+        def gensalt():
+            return b"mock_salt"
+        
+        @staticmethod
+        def hashpw(password, salt):
+            return f"mock_hash_{password.decode('utf-8')}".encode('utf-8')
+        
+        @staticmethod
+        def checkpw(password, hashed_password):
+            return f"mock_hash_{password.decode('utf-8')}".encode('utf-8') == hashed_password
+    
+    bcrypt = MockBcrypt()
 
 def get_beijing_time():
     """获取北京时间 (UTC+8)"""

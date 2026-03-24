@@ -1,167 +1,176 @@
 import requests
 from bs4 import BeautifulSoup
-import json
-import time
-import random
-from urllib.parse import urljoin, urlparse
 import re
+import json
+import os
+from datetime import datetime
+import pymysql
+from config import Config
 
-# 农业农村部新闻页面URL
-BASE_URL = "https://www.moa.gov.cn/xw/zwdt/"
-NEWS_URL = "https://www.moa.gov.cn/xw/zwdt/202509/t20250925_6477769.htm"
+def get_db_connection():
+    """获取数据库连接"""
+    return pymysql.connect(
+        host=Config.MYSQL_HOST,
+        user=Config.MYSQL_USER,
+        password=Config.MYSQL_PASSWORD,
+        database=Config.MYSQL_DB,
+        port=Config.MYSQL_PORT,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
 def scrape_moa_news():
-    """爬取农业农村部新闻内容"""
-    headers = {
+    # 农业农村部网站地址
+    url = "http://www.moa.gov.cn/xw/bmdt/"
+    
+    # 发送请求
+    response = requests.get(url, headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+    })
+    response.encoding = 'utf-8'
     
-    try:
-        # 获取新闻页面内容
-        response = requests.get(NEWS_URL, headers=headers, timeout=10)
-        response.encoding = 'utf-8'  # 设置编码
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # 提取新闻标题
-        title_elem = soup.find('meta', attrs={'name': 'ArticleTitle'})
-        title = title_elem.get('content').strip() if title_elem else "未找到标题"
-        
-        # 提取新闻发布时间
-        time_elem = soup.find('meta', attrs={'name': 'PubDate'})
-        publish_time = time_elem.get('content').strip() if time_elem else "未知时间"
-        
-        # 提取新闻内容
-        # 根据分析的HTML结构，新闻内容在<div class="content_body_box">中
-        content_div = soup.find('div', class_='content_body_box')
-        content = ""
-        if content_div:
-            # 移除script和style标签
-            for script in content_div(["script", "style"]):
-                script.decompose()
-            # 获取文本内容
-            content = content_div.get_text().strip()
-        
-        # 提取图片链接
-        images = []
-        if content_div:
-            img_tags = content_div.find_all('img')
-            for img in img_tags:
-                src = img.get('src')
-                if src:
-                    # 处理相对链接
-                    full_url = urljoin(NEWS_URL, src)
-                    images.append(full_url)
-        
-        # 如果没有找到内容，尝试其他可能的选择器
-        if not content:
-            # 查找所有p标签作为备选
-            p_tags = soup.find_all('p')
-            content = '\n'.join([p.get_text().strip() for p in p_tags if p.get_text().strip()])
-        
-        # 构造新闻对象
-        news_item = {
-            "id": 4,  # 新的ID
-            "title": title if title else "未找到标题",
-            "category": "政务动态",
-            "summary": content[:100] + "..." if len(content) > 100 else content,
-            "content": f"<p>{content.replace(chr(10), '</p><p>')}</p>" if content else "<p>无法获取新闻内容</p>",
-            "image": images[0] if images else "https://via.placeholder.com/400x250",
-            "author": "农业农村部",
-            "time": publish_time if publish_time else "未知时间",
-            "views": random.randint(5000, 15000)  # 随机浏览量
-        }
-        
-        return news_item
+    # 解析HTML
+    soup = BeautifulSoup(response.text, 'html.parser')
     
-    except Exception as e:
-        print(f"爬取新闻时出错: {e}")
-        return None
-
-def update_news_data(news_item):
-    """更新农情速递模块的新闻数据"""
-    if not news_item:
-        print("没有获取到新闻数据")
-        return False
+    # 找到新闻列表
+    news_list = soup.find('ul', class_='news_list')
+    if not news_list:
+        print("未找到新闻列表")
+        return []
     
-    # 读取现有的index.html文件
-    try:
-        with open('api/agricultural-news/index.html', 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # 查找newsData数组的位置
-        start_marker = "// 资讯数据\n    const newsData = ["
-        end_marker = "    ];"
-        
-        start_pos = content.find(start_marker)
-        if start_pos == -1:
-            print("未找到newsData数组的开始位置")
-            return False
+    # 提取新闻链接
+    news_items = news_list.find_all('li')
+    news_data = []
+    
+    # 只爬取最新的10条新闻
+    for item in news_items[:10]:
+        try:
+            # 找到链接
+            link = item.find('a')
+            if not link:
+                continue
             
-        start_pos += len(start_marker)
-        end_pos = content.find(end_marker, start_pos)
-        if end_pos == -1:
-            print("未找到newsData数组的结束位置")
-            return False
-        
-        # 提取现有的新闻数据
-        news_data_str = content[start_pos:end_pos].strip()
-        
-        # 将现有数据转换为Python对象
-        # 这里简化处理，直接在字符串层面操作
-        
-        # 将新的新闻项转换为JavaScript对象字符串
-        new_item_str = f"""
-      {{
-        id: {news_item['id']},
-        title: '{news_item['title']}',
-        category: '{news_item['category']}',
-        summary: '{news_item['summary']}',
-        content: `{news_item['content']}`,
-        image: '{news_item['image']}',
-        author: '{news_item['author']}',
-        time: '{news_item['time']}',
-        views: {news_item['views']}
-      }},"""
-        
-        # 在第一个新闻项之前插入新项
-        insert_pos = news_data_str.find("{")
-        if insert_pos != -1:
-            updated_news_data = news_data_str[:insert_pos] + new_item_str + "\n      " + news_data_str[insert_pos:]
-        else:
-            updated_news_data = new_item_str + "\n      " + news_data_str
-        
-        # 更新整个文件内容
-        updated_content = content[:start_pos] + updated_news_data + content[end_pos:]
-        
-        # 写入更新后的内容
-        with open('api/agricultural-news/index.html', 'w', encoding='utf-8') as f:
-            f.write(updated_content)
-        
-        print("成功更新农情速递模块的新闻数据")
-        return True
-        
-    except Exception as e:
-        print(f"更新新闻数据时出错: {e}")
-        return False
-
-def main():
-    """主函数"""
-    print("开始爬取农业农村部新闻...")
-    news_item = scrape_moa_news()
+            # 获取标题和链接
+            title = link.get_text(strip=True)
+            href = link.get('href')
+            
+            # 构建完整链接
+            if href.startswith('http'):
+                full_url = href
+            else:
+                full_url = f"http://www.moa.gov.cn{href}"
+            
+            # 找到时间
+            time_span = item.find('span')
+            date_str = time_span.get_text(strip=True) if time_span else ""
+            
+            # 解析日期
+            try:
+                date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except:
+                date = datetime.now().date()
+            
+            # 爬取新闻详情
+            detail_response = requests.get(full_url, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            })
+            detail_response.encoding = 'utf-8'
+            detail_soup = BeautifulSoup(detail_response.text, 'html.parser')
+            
+            # 提取新闻内容
+            content_div = detail_soup.find('div', class_='TRS_Editor') or detail_soup.find('div', class_='content')
+            content = ""
+            if content_div:
+                # 移除所有脚本和样式
+                for script in content_div(['script', 'style']):
+                    script.decompose()
+                content = content_div.get_text(separator='\n', strip=True)
+            
+            # 提取图片
+            images = []
+            img_tags = detail_soup.find_all('img')
+            for img in img_tags:
+                img_src = img.get('src')
+                if img_src:
+                    if img_src.startswith('http'):
+                        images.append(img_src)
+                    else:
+                        images.append(f"http://www.moa.gov.cn{img_src}")
+            
+            # 生成nid（使用时间戳和随机数）
+            nid = f"{int(datetime.now().timestamp())}{hash(title) % 1000:03d}"
+            
+            # 分类（简单分类）
+            category = "政策" if "政策" in title else "资讯"
+            
+            news_data.append({
+                'nid': nid,
+                'title': title,
+                'url': full_url,
+                'date': date_str,
+                'content': content,
+                'images': images,
+                'category': category
+            })
+            
+            print(f"爬取成功: {title}")
+            
+        except Exception as e:
+            print(f"爬取失败: {str(e)}")
+            continue
     
-    if news_item:
-        print("成功获取新闻:")
-        print(f"标题: {news_item['title']}")
-        print(f"时间: {news_item['time']}")
-        print(f"摘要: {news_item['summary']}")
-        
-        # 更新到农情速递模块
-        if update_news_data(news_item):
-            print("新闻已成功添加到农情速递模块")
-        else:
-            print("更新农情速递模块失败")
-    else:
-        print("未能获取新闻内容")
+    return news_data
+
+def save_news_to_database(news_data):
+    """将新闻数据保存到数据库"""
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            # 清空旧数据（可选，根据需求决定）
+            # cursor.execute("TRUNCATE TABLE agri_news_articles")
+            
+            # 插入新闻数据
+            for news in news_data:
+                # 检查是否已存在相同标题的新闻
+                cursor.execute(
+                    "SELECT id FROM agri_news_articles WHERE title = %s",
+                    (news['title'],)
+                )
+                if cursor.fetchone():
+                    print(f"新闻已存在: {news['title']}")
+                    continue
+                
+                # 插入新闻
+                sql = """
+                INSERT INTO agri_news_articles (nid, title, url, category, publish_time)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(sql, (
+                    news['nid'],
+                    news['title'],
+                    news['url'],
+                    news['category'],
+                    news['date']
+                ))
+            
+            # 提交事务
+            connection.commit()
+            print(f"成功保存 {len(news_data)} 条新闻到数据库")
+    except Exception as e:
+        print(f"保存新闻到数据库失败: {str(e)}")
+        if connection:
+            connection.rollback()
+    finally:
+        if connection:
+            connection.close()
+
 
 if __name__ == "__main__":
-    main()
+    print("开始爬取农业农村部新闻...")
+    news_data = scrape_moa_news()
+    if news_data:
+        save_news_to_database(news_data)
+        print(f"爬取完成，共获取 {len(news_data)} 条新闻")
+    else:
+        print("未获取到新闻数据")

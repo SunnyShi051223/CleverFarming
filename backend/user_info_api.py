@@ -10,7 +10,7 @@ from utils import get_beijing_time, get_db_connection, token_required
 user_info_bp = Blueprint('user_info', __name__)
 
 # 高德天气API配置
-AMAP_WEATHER_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
+
 
 # Token验证装饰器
 def token_required_simple(f):
@@ -168,7 +168,8 @@ def get_weather():
         
         print(f"正在获取天气信息: city={city_name}, adcode={adcode}")
         
-        response = requests.get(AMAP_WEATHER_URL, params=params, timeout=10)
+        amap_weather_url = current_app.config['AMAP_WEATHER_URL']
+        response = requests.get(amap_weather_url, params=params, timeout=10)
         data = response.json()
         
         print(f"高德天气API响应: {data}")

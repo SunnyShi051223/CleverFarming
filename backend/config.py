@@ -13,8 +13,9 @@ class Config:
     
     # 千问API配置
     QWEN_API_KEY = os.environ.get('QWEN_API_KEY') or 'your-qwen-api-key-here'
-    QWEN_API_URL = os.environ.get('QWEN_API_URL') or 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation'
+    QWEN_API_URL = os.environ.get('QWEN_API_URL') or 'https://dashscope.aliyuncs.com/compatible-mode/v1'
     
     # 高德天气API配置
     AMAP_API_KEY = os.environ.get('AMAP_API_KEY') or 'your-amap-api-key-here'
+    AMAP_WEATHER_URL = os.environ.get('AMAP_WEATHER_URL') or 'https://restapi.amap.com/v3/weather/weatherInfo'
 

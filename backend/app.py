@@ -12,7 +12,7 @@ import jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from config import Config
-from utils import hash_password, verify_token, get_beijing_time
+from utils import hash_password, verify_token, get_beijing_time, get_db_connection
 from news_api import news_bp
 from ai_agent import ai_agent_bp
 from user_info_api import user_info_bp

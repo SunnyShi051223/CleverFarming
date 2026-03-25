@@ -628,14 +628,13 @@
         // 先从localStorage获取缓存的天气数据
         const cachedWeather = getWeatherFromStorage();
         if (cachedWeather) {
-          console.log('使用缓存的天气数据');
           updateWeatherUI(cachedWeather);
           return;
         }
         
         // 如果没有缓存或缓存过期，则从服务器获取
-        console.log('从服务器获取天气信息...');
-        const response = await fetch('/api/user/weather', { credentials: 'include' });
+        // 注意：这里改为调用 /api/weather
+        const response = await fetch('/api/weather', { credentials: 'include' });
         const result = await response.json();
         
         if (result.success) {
@@ -647,7 +646,6 @@
             wind: result.weather.wind_direction + '风 ' + result.weather.wind_power + '级'
           };
           
-          // 保存到localStorage，设置30分钟过期时间
           localStorage.setItem('weatherData', JSON.stringify({
             weather: weather,
             timestamp: Date.now()
@@ -655,13 +653,10 @@
           
           updateWeatherUI(weather);
         } else {
-          console.error('获取天气信息失败:', result.message);
-          // 显示默认信息
           updateWeatherUI(null);
         }
       } catch (error) {
         console.error('获取天气信息出错:', error);
-        // 显示默认信息
         updateWeatherUI(null);
       }
     }
@@ -888,7 +883,7 @@
     }
 
     // 更新日期显示
-    function updateCurrentDate() {
+    async function updateCurrentDate() {
       const now = new Date();
       const options = { 
         year: 'numeric', 
@@ -899,9 +894,16 @@
       };
       document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
       
-      // 农历和节气信息（这里简化为固定文本，实际项目中应该使用农历库计算）
-      const lunarInfo = '农历九月十六 · 寒露后第11天'; // 实际项目中应使用农历库计算
-      document.querySelector('.date-info p').textContent = lunarInfo;
+      try {
+        // 动态获取农历和节气信息
+        const res = await fetch('/api/lunar');
+        const result = await res.json();
+        if (result.success) {
+            document.querySelector('.date-info p').textContent = result.full_info;
+        }
+      } catch (e) {
+        console.error('获取农历信息失败:', e);
+      }
     }
 
     // 更新天气UI

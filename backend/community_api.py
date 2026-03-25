@@ -5,36 +5,7 @@ import jwt
 
 community_bp = Blueprint('community', __name__)
 
-def get_db_connection():
-    connection = pymysql.connect(
-        host=current_app.config['MYSQL_HOST'],
-        user=current_app.config['MYSQL_USER'],
-        password=current_app.config['MYSQL_PASSWORD'],
-        database=current_app.config['MYSQL_DB'],
-        port=current_app.config['MYSQL_PORT'],
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    # 设置会话时区为北京时间 (UTC+8)
-    with connection.cursor() as cursor:
-        cursor.execute("SET time_zone = '+08:00'")
-    return connection
-
-def token_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from utils import get_token_from_request
-        token = get_token_from_request(request)
-        if not token:
-            return jsonify({'message': '未登录', 'success': False}), 401
-        try:
-            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user_id = data['user_id']
-        except tuple([jwt.ExpiredSignatureError, jwt.InvalidTokenError, Exception]):
-            return jsonify({'message': 'Token无效', 'success': False}), 401
-        return f(current_user_id, *args, **kwargs)
-    return decorated
+from utils import get_db_connection, token_required
 
 @community_bp.route('/community/posts', methods=['GET'])
 @token_required

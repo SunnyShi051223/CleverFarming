@@ -72,21 +72,6 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
-# 数据库连接函数
-def get_db_connection():
-    connection = pymysql.connect(
-        host=app.config['MYSQL_HOST'],
-        user=app.config['MYSQL_USER'],
-        password=app.config['MYSQL_PASSWORD'],
-        database=app.config['MYSQL_DB'],
-        port=app.config['MYSQL_PORT'],
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    # 设置会话时区为北京时间 (UTC+8)
-    with connection.cursor() as cursor:
-        cursor.execute("SET time_zone = '+08:00'")
-    return connection
-
 # 添加根路径路由，渲染登录页面
 @app.route('/')
 def home():

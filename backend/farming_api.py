@@ -10,38 +10,8 @@ import math
 # 创建蓝图
 farming_bp = Blueprint('farming', __name__)
 
-def get_db_connection():
-    """获取数据库连接"""
-    try:
-        connection = pymysql.connect(
-            host=Config.MYSQL_HOST,
-            user=Config.MYSQL_USER,
-            password=Config.MYSQL_PASSWORD,
-            database=Config.MYSQL_DB,
-            port=Config.MYSQL_PORT,
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
-        )
-        return connection
-    except Exception as e:
-        print(f"数据库连接失败: {e}")
-        return None
+from utils import get_db_connection, token_required, get_beijing_time
 
-def token_required(f):
-    """Token验证装饰器"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from utils import get_token_from_request
-        token = get_token_from_request(request)
-        if not token:
-            return jsonify({'message': '未登录', 'success': False}), 401
-        try:
-            data = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
-            current_user_id = data['user_id']
-        except tuple([jwt.ExpiredSignatureError, jwt.InvalidTokenError, Exception]):
-            return jsonify({'message': 'Token无效', 'success': False}), 401
-        return f(current_user_id, *args, **kwargs)
-    return decorated
 
 @farming_bp.route('/api/alerts', methods=['GET'])
 @token_required

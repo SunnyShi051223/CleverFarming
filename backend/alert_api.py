@@ -3,41 +3,11 @@ import pymysql
 from config import Config
 from functools import wraps
 import jwt
-from utils import get_beijing_time
+from utils import get_beijing_time, get_db_connection, token_required
 
 # 创建预警API蓝图
 alert_bp = Blueprint('alert', __name__)
 
-def get_db_connection():
-    """获取数据库连接并设置时区"""
-    connection = pymysql.connect(
-        host=Config.MYSQL_HOST,
-        user=Config.MYSQL_USER,
-        password=Config.MYSQL_PASSWORD,
-        database=Config.MYSQL_DB,
-        port=Config.MYSQL_PORT,
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    with connection.cursor() as cursor:
-        cursor.execute("SET time_zone = '+08:00'")
-    return connection
-
-def token_required(f):
-    """Token验证装饰器"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from utils import get_token_from_request
-        token = get_token_from_request(request)
-        if not token:
-            return jsonify({'message': '未登录', 'success': False}), 401
-        try:
-            data = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
-            current_user_id = data['user_id']
-        except tuple([jwt.ExpiredSignatureError, jwt.InvalidTokenError, Exception]):
-            return jsonify({'message': 'Token无效', 'success': False}), 401
-        return f(current_user_id, *args, **kwargs)
-    return decorated
 
 @alert_bp.route('/list', methods=['GET'])
 @token_required

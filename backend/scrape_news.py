@@ -7,17 +7,7 @@ from datetime import datetime
 import pymysql
 from config import Config
 
-def get_db_connection():
-    """获取数据库连接"""
-    return pymysql.connect(
-        host=Config.MYSQL_HOST,
-        user=Config.MYSQL_USER,
-        password=Config.MYSQL_PASSWORD,
-        database=Config.MYSQL_DB,
-        port=Config.MYSQL_PORT,
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
+from utils import get_db_connection
 
 def scrape_moa_news():
     # 农业农村部网站地址

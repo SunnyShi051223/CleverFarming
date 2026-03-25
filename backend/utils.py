@@ -1,6 +1,9 @@
-# utils.py
-import jwt
 from datetime import datetime, timezone, timedelta
+import pymysql
+import jwt
+from functools import wraps
+from flask import request, jsonify
+from config import Config
 
 # 尝试导入bcrypt，如果失败则使用模拟实现
 try:
@@ -68,3 +71,39 @@ def get_token_from_request(request):
     if not token:
         token = request.cookies.get('token')
     return token
+
+def get_db_connection():
+    """全局统一获取数据库连接"""
+    try:
+        connection = pymysql.connect(
+            host=Config.MYSQL_HOST,
+            user=Config.MYSQL_USER,
+            password=Config.MYSQL_PASSWORD,
+            database=Config.MYSQL_DB,
+            port=Config.MYSQL_PORT,
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        # 设置会话时区为北京时间 (UTC+8)
+        with connection.cursor() as cursor:
+            cursor.execute("SET time_zone = '+08:00'")
+        return connection
+    except Exception as e:
+        print(f"数据库连接失败: {e}")
+        return None
+
+def token_required(f):
+    """全局Token验证装饰器"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_token_from_request(request)
+        if not token:
+            return jsonify({'success': False, 'message': '未提供Token，请先登录'}), 401
+        
+        is_valid, payload = verify_token(token, Config.SECRET_KEY)
+        if not is_valid:
+            return jsonify({'success': False, 'message': payload.get('error', '无效的Token')}), 401
+        
+        # 将user_id传递给函数
+        return f(payload['user_id'], *args, **kwargs)
+    return decorated

@@ -5,25 +5,9 @@ import requests
 import pymysql
 from functools import wraps
 import jwt
-from utils import get_beijing_time
+from utils import get_beijing_time, get_db_connection, token_required
 
 user_info_bp = Blueprint('user_info', __name__)
-
-def get_db_connection():
-    from flask import current_app
-    connection = pymysql.connect(
-        host=current_app.config['MYSQL_HOST'],
-        user=current_app.config['MYSQL_USER'],
-        password=current_app.config['MYSQL_PASSWORD'],
-        database=current_app.config['MYSQL_DB'],
-        port=current_app.config['MYSQL_PORT'],
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    # 设置会话时区为北京时间 (UTC+8)
-    with connection.cursor() as cursor:
-        cursor.execute("SET time_zone = '+08:00'")
-    return connection
 
 # 高德天气API配置
 AMAP_WEATHER_URL = "https://restapi.amap.com/v3/weather/weatherInfo"

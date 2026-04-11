@@ -307,11 +307,21 @@
 
     <!-- 系统配置模块 -->
     <div id="system" class="tab-content">
-      <h2 class="module-title">系统配置</h2>
-      <p class="module-description">管理系统的各项参数和设置。</p>
-      <div class="placeholder-content">
-        <i class="fas fa-cogs placeholder-icon"></i>
-        <p>系统配置功能开发中...</p>
+      <h2 class="module-title">系统更新与任务</h2>
+      <p class="module-description">管理系统的各项数据更新与任务调度。</p>
+      
+      <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div>
+          <h3 style="color: var(--primary-green); margin-bottom: 5px; font-size: 1.2rem;"><i class="fas fa-newspaper"></i> 农业资讯同步与推送</h3>
+          <p style="color: var(--text-light); font-size: 0.95rem;">点击将触发后台爬虫，从五大核心数据源抓取最新农业资讯并推送给农户集群。</p>
+        </div>
+        <button id="crawlBtn" onclick="triggerCrawl()" style="background-color: var(--primary-green); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; transition: var(--transition);">
+          <i class="fas fa-spider" style="margin-right: 8px;"></i> 一键爬取并推送
+        </button>
+      </div>
+      
+      <div id="crawlResult" style="display: none; padding: 20px; border-radius: 10px; background-color: #e8f5e9; border: 1px solid #c8e6c9;">
+        <!-- 结果展示区 -->
       </div>
     </div>
 
@@ -437,6 +447,59 @@
     window.onload = function() {
       // 这里不需要额外检查，因为后端中间件已经验证了token
       // 如果未登录或token无效，后端会重定向到登录页
+    }
+
+    // 爬虫触发逻辑
+    async function triggerCrawl() {
+      const btn = document.getElementById('crawlBtn');
+      const resultDiv = document.getElementById('crawlResult');
+      
+      if (!confirm('这可能需要几秒钟时间，确定要开始爬取吗？')) return;
+      
+      // UI 反馈
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> 正在爬取...';
+      resultDiv.style.display = 'none';
+      
+      try {
+        const res = await fetch('/api/admin/news/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await res.json();
+        
+        resultDiv.style.display = 'block';
+        if (result.code === 200 || result.success) {
+           resultDiv.style.backgroundColor = '#e8f5e9';
+           resultDiv.style.borderColor = '#c8e6c9';
+           let msg = `<h4 style="color: #2e7d32; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-check-circle"></i> ${result.message || '爬取并推送成功！'}</h4>`;
+           
+           if (result.data && result.data.details) {
+              msg += `<ul style="margin-left: 20px; color: #424242; line-height: 1.8;">`;
+              result.data.details.forEach(d => {
+                 msg += `<li>频道【<strong>${d.category}</strong>】: 共抓取 <strong>${d.found}</strong> 条数据，新增入库推送 <strong style="color: #d32f2f;">${d.added}</strong> 条</li>`;
+              });
+              msg += `</ul><div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #a5d6a7; color: #2e7d32; font-weight: bold;">`;
+              msg += `本次共计新增入库并推送资讯: <span style="font-size: 1.3rem;">${result.data.total_added}</span> 条</div>`;
+           }
+           resultDiv.innerHTML = msg;
+        } else {
+           resultDiv.style.backgroundColor = '#ffebee';
+           resultDiv.style.borderColor = '#ffcdd2';
+           resultDiv.innerHTML = `<h4 style="color: #c62828;"><i class="fas fa-exclamation-triangle"></i> 部分失败或异常</h4><p style="color: #d32f2f; margin-top: 5px;">${result.message}</p>`;
+        }
+      } catch(e) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.backgroundColor = '#ffebee';
+        resultDiv.style.borderColor = '#ffcdd2';
+        resultDiv.innerHTML = `<h4 style="color: #c62828;"><i class="fas fa-times-circle"></i> 网络异常</h4><p style="color: #d32f2f; margin-top: 5px;">无法连接到服务器，请联系技术支持。</p>`;
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = '<i class="fas fa-spider" style="margin-right: 8px;"></i> 一键爬取并推送';
+      }
     }
   </script>
 </body>

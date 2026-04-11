@@ -7,7 +7,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here' # 用于JWT签名
     MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or 'XXX'
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or 'shisannian1223'
     MYSQL_DB = os.environ.get('MYSQL_DB') or 'clever_farming'
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT') or 3306)
     

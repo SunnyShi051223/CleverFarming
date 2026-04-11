@@ -10,6 +10,7 @@ from datetime import datetime
 news_bp = Blueprint('news', __name__)
 
 from utils import get_db_connection, token_required, get_beijing_time
+from crawler_task import run_crawler_pipeline
 
 @news_bp.route('/api/news/list', methods=['GET'])
 @token_required
@@ -197,3 +198,35 @@ def get_news_detail(news_id):
     finally:
         if 'connection' in locals() and connection:
             connection.close()
+
+@news_bp.route('/api/admin/news/crawl', methods=['POST'])
+@token_required
+def admin_crawl_news(current_user_id):
+    """管理员点击一键爬取新闻并入库推送"""
+    connection = None
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({'code': 500, 'message': '数据库连接失败'}), 500
+            
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+            user = cursor.fetchone()
+            if not user or user.get('role') != 'admin':
+                return jsonify({'code': 403, 'message': '仅管理员有权限执行爬取'}), 403
+                
+        # 执行爬虫逻辑
+        result = run_crawler_pipeline()
+        
+        return jsonify({
+            'code': 200,
+            'message': '爬取并推送成功',
+            'data': result
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'code': 500, 'message': f'爬取失败: {str(e)}'}), 500
+    finally:
+        if connection:
+            connection.close()

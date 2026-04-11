@@ -713,6 +713,7 @@
           <div class="knowledge-list" id="knowledgeList" style="display: none;">
             <!-- 知识列表将通过JavaScript动态生成 -->
           </div>
+          <div class="knowledge-detail" id="knowledgeDetail" style="display: none;"></div>
         </div>
       </div>
     </div>
@@ -723,18 +724,49 @@
     let knowledgeData = [];
     
     async function fetchKnowledge() {
+      const knowledgeGrid = document.getElementById('knowledgeGrid');
+      if (knowledgeGrid) {
+        knowledgeGrid.innerHTML = `
+          <div class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>正在加载农识宝典数据...</p>
+          </div>
+        `;
+      }
+
       try {
         const response = await fetch('/api/knowledge/items', { credentials: 'include' });
+        if (!response.ok) {
+          throw new Error(`请求失败: ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          throw new Error('接口返回非JSON，可能未登录或权限不足');
+        }
+
         const result = await response.json();
-        if (result.success && result.data) {
+        if (result.success && Array.isArray(result.data)) {
           knowledgeData = result.data;
           // 重新生成分类、标签并渲染网格
           createCategoryList();
           createTagCloud();
           displayKnowledgeGrid();
+          return;
         }
+
+        throw new Error(result.message || '未获取到知识数据');
       } catch (e) {
         console.error('获取农识宝典数据失败:', e);
+        if (knowledgeGrid) {
+          knowledgeGrid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-circle-exclamation"></i>
+              <h3>数据加载失败</h3>
+              <p>${e.message || '请稍后重试'}</p>
+            </div>
+          `;
+        }
       }
     }
 
@@ -766,6 +798,8 @@
     function createCategoryList() {
       const categoryList = document.getElementById('categoryList');
       if (!categoryList) return;
+
+      categoryList.innerHTML = '';
       
       // 获取所有分类
       const categories = [...new Set(knowledgeData.map(item => item.category))];
@@ -787,6 +821,8 @@
     function createTagCloud() {
       const tagCloud = document.getElementById('tagCloud');
       if (!tagCloud) return;
+
+      tagCloud.innerHTML = '';
       
       // 定义热门标签
       const tags = ['水稻', '小麦', '玉米', '病虫害', '施肥', '灌溉', '有机农业', '温室大棚', '收获', '储藏'];
@@ -868,13 +904,16 @@
     // 执行搜索
     function performSearch() {
       const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-      if (!searchTerm) return;
+      if (!searchTerm) {
+        displayKnowledgeGrid();
+        return;
+      }
       
       const filteredData = knowledgeData.filter(item => 
         item.title.toLowerCase().includes(searchTerm) || 
-        item.summary.toLowerCase().includes(searchTerm) ||
-        item.content.toLowerCase().includes(searchTerm) ||
-        item.category.toLowerCase().includes(searchTerm)
+        (item.summary || '').toLowerCase().includes(searchTerm) ||
+        (item.content || '').toLowerCase().includes(searchTerm) ||
+        (item.category || '').toLowerCase().includes(searchTerm)
       );
       
       displayKnowledgeGrid(filteredData);
@@ -946,7 +985,7 @@
         card.className = 'knowledge-item';
         card.innerHTML = `
           <h3><i class="fas fa-book-open"></i> ${item.title}</h3>
-          <p>${item.summary}</p>
+          <p>${item.summary || '暂无摘要'}</p>
           <span class="category-badge">${item.category}</span>
         `;
         card.addEventListener('click', () => showKnowledgeDetail(item.id));
@@ -957,7 +996,10 @@
     // 显示知识详情
     async function showKnowledgeDetail(id) {
       try {
-        const res = await fetch(`/api/knowledge/item/${id}`);
+        const res = await fetch(`/api/knowledge/item/${id}`, { credentials: 'include' });
+        if (!res.ok) {
+          throw new Error(`请求失败: ${res.status}`);
+        }
         const result = await res.json();
         if (result.success) {
           const item = result.item;
@@ -993,7 +1035,7 @@
           }
         }
       } catch (e) {
-        console.error(e);
+        console.error('获取知识详情失败:', e);
       }
     }
 
@@ -1001,10 +1043,18 @@
     function showKnowledgeGrid() {
       const knowledgeDetail = document.getElementById('knowledgeDetail');
       const knowledgeGrid = document.getElementById('knowledgeGrid');
+      const knowledgeList = document.getElementById('knowledgeList');
+      const gridViewBtn = document.getElementById('gridViewBtn');
+      const listViewBtn = document.getElementById('listViewBtn');
       
-      if (knowledgeDetail && knowledgeGrid) {
+      if (knowledgeDetail && knowledgeGrid && knowledgeList) {
         knowledgeDetail.style.display = 'none';
         knowledgeGrid.style.display = 'grid';
+        knowledgeList.style.display = 'none';
+        if (gridViewBtn && listViewBtn) {
+          gridViewBtn.classList.add('active');
+          listViewBtn.classList.remove('active');
+        }
       }
     }
   </script>

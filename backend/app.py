@@ -665,7 +665,7 @@ def logout():
 
 # 知识库API
 @app.route('/api/knowledge/categories', methods=['GET'])
-@role_required(['admin', 'farmer'])
+@role_required(['admin', 'user', 'farmer'])
 def get_knowledge_categories(payload):
     try:
         connection = get_db_connection()
@@ -682,7 +682,7 @@ def get_knowledge_categories(payload):
             connection.close()
 
 @app.route('/api/knowledge/items', methods=['GET'])
-@role_required(['admin', 'farmer'])
+@role_required(['admin', 'user', 'farmer'])
 def get_knowledge_items(payload):
     try:
         category = request.args.get('category')
@@ -766,7 +766,7 @@ def get_knowledge_items(payload):
             connection.close()
 
 @app.route('/api/knowledge/item/<int:item_id>', methods=['GET'])
-@role_required(['admin', 'farmer'])
+@role_required(['admin', 'user', 'farmer'])
 def get_knowledge_item(payload, item_id):
     try:
         connection = get_db_connection()

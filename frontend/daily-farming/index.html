@@ -464,74 +464,11 @@
       box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
     }
     
-    .task-btn.uncomplete {
-      background: white;
-      color: black;
-      border: 1px solid var(--border-color);
-    }
-
-    .task-btn.uncomplete:hover {
-      background: var(--light-bg);
-    }
-
-    .task-btn.completed {
-      background: var(--secondary-green);
-      color: white;
-    }
-
-    .task-btn.completed:hover {
-      background: var(--primary-green);
-    }
-
-    .filter-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .filter-tab {
-      padding: 6px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: var(--transition);
-      border: 1px solid var(--border-color);
-      background: white;
-      color: var(--text-dark);
-    }
-
-    .filter-tab:hover {
-      background: var(--light-bg);
-    }
-
-    .filter-tab.active {
-      background: var(--primary-green);
-      color: white;
-      border-color: var(--primary-green);
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid var(--accent-green);
-      padding-bottom: 10px;
-    }
-
-    .section-title {
-      color: var(--primary-green);
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     @media (max-width: 1024px) {
       .main-grid {
         grid-template-columns: 1fr;
       }
-
+      
       .sidebar {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         display: grid;
@@ -597,17 +534,10 @@
 
     <div class="main-grid">
       <div class="tasks-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="fas fa-tasks"></i>
-            今日待办任务
-          </h2>
-          <div class="filter-tabs">
-            <span class="filter-tab active" data-filter="all" onclick="filterTasks('all')">全部</span>
-            <span class="filter-tab" data-filter="pending" onclick="filterTasks('pending')">未完成</span>
-            <span class="filter-tab" data-filter="completed" onclick="filterTasks('completed')">已完成</span>
-          </div>
-        </div>
+        <h2 class="section-title">
+          <i class="fas fa-tasks"></i>
+          今日待办任务
+        </h2>
         
         <div class="task-list" id="taskList">
           <div style="text-align: center; padding: 20px; color: #666;">
@@ -688,18 +618,9 @@
   </div>
 
   <script>
-    let currentFilter = 'all';
-    let allTasks = [];
+    // 当前显示的年月
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
-
-    function filterTasks(filter) {
-      currentFilter = filter;
-      document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.filter === filter);
-      });
-      renderTasks(allTasks);
-    }
     
     // 从服务器获取天气信息
     async function fetchWeather() {
@@ -817,31 +738,22 @@
     }
     
     function renderTasks(tasks) {
-      allTasks = tasks;
       const taskList = document.getElementById('taskList');
-
-      let filteredTasks = tasks;
-      if (currentFilter === 'pending') {
-        filteredTasks = tasks.filter(t => t.status !== 'completed');
-      } else if (currentFilter === 'completed') {
-        filteredTasks = tasks.filter(t => t.status === 'completed');
-      }
-
-      if (!filteredTasks || filteredTasks.length === 0) {
-        taskList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无相关任务</div>';
+      if (!tasks || tasks.length === 0) {
+        taskList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无待办任务</div>';
         return;
       }
-
-      taskList.innerHTML = filteredTasks.map(task => {
-        const isCompleted = task.status === 'completed';
+      
+      taskList.innerHTML = tasks.map(task => {
         const isUrgent = task.priority === 'high' ? 'urgent' : '';
+        const isCompleted = task.status === 'completed' ? 'completed' : '';
         const priorityClass = task.priority;
         const priorityLabel = task.priority === 'high' ? '紧急' : task.priority === 'medium' ? '重要' : '普通';
         const iconColor = task.priority === 'high' ? '#f44336' : task.priority === 'medium' ? '#2196f3' : '#4caf50';
-        const iconName = isCompleted ? 'fa-check-circle' : (task.priority === 'high' ? 'fa-exclamation-circle' : 'fa-circle');
-
+        const iconName = task.status === 'completed' ? 'fa-check-circle' : (task.priority === 'high' ? 'fa-exclamation-circle' : 'fa-circle');
+        
         return `
-          <div class="task-item ${isUrgent} ${isCompleted ? 'completed' : ''}">
+          <div class="task-item ${isUrgent} ${isCompleted}">
             <div class="task-header">
               <div class="task-title">
                 <i class="fas ${iconName}" style="color: ${iconColor};"></i>
@@ -856,19 +768,15 @@
               <span><i class="fas fa-clock"></i> ${task.time}</span>
               <span><i class="fas fa-map-marker-alt"></i> ${task.location}</span>
             </div>
+            ${!isCompleted ? `
             <div class="task-actions">
-              ${isCompleted ?
-                `<button class="task-btn completed" onclick="uncompleteTask(${task.id})">
-                  <i class="fas fa-undo"></i> 标记未完成
-                </button>` :
-                `<button class="task-btn uncomplete" onclick="completeTask(${task.id})">
-                  <i class="fas fa-check"></i> 标记完成
-                </button>`
-              }
+              <button class="task-btn complete" onclick="completeTask(${task.id})">
+                <i class="fas fa-check"></i> 标记完成
+              </button>
               <button class="task-btn detail" onclick="viewTaskDetail(${task.id})">
                 <i class="fas fa-info-circle"></i> 查看详情
               </button>
-            </div>
+            </div>` : ''}
           </div>
         `;
       }).join('');
@@ -889,33 +797,13 @@
     async function completeTask(taskId) {
       if(confirm('确定标记此任务为已完成吗？')) {
         try {
-          const response = await fetch('/api/tasks/' + taskId + '/status', {
+          const response = await fetch('/api/tasks/' + taskId + '/status', { 
               method: 'PUT',
               credentials: 'include'
           });
           const result = await response.json();
           if (result.success) {
-            fetchTasks();
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    // 标记未完成
-    async function uncompleteTask(taskId) {
-      if(confirm('确定标记此任务为未完成吗？')) {
-        try {
-          const response = await fetch('/api/tasks/' + taskId + '/status', {
-              method: 'PUT',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'pending' })
-          });
-          const result = await response.json();
-          if (result.success) {
-            fetchTasks();
+            fetchTasks(); // 刷新列表
           }
         } catch (e) {
           console.error(e);

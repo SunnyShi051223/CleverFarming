@@ -134,7 +134,7 @@
       margin: 8px 0;
       font-size: 1.1rem;
     }
-    
+
     .disease-container {
       background-color: var(--card-bg);
       padding: 35px;
@@ -142,7 +142,7 @@
       box-shadow: var(--shadow);
       min-height: 500px;
     }
-    
+
     .disease-upload {
       display: flex;
       flex-direction: column;
@@ -150,7 +150,7 @@
       gap: 20px;
       margin-bottom: 30px;
     }
-    
+
     .upload-area {
       width: 100%;
       max-width: 500px;
@@ -181,14 +181,14 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
-    
+
     .upload-area:hover {
       border-color: var(--secondary-green);
       background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
       transform: scale(1.02);
       box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
     }
-    
+
     .upload-area i {
       font-size: 4rem;
       color: var(--primary-green);
@@ -211,7 +211,7 @@
       color: var(--text-light);
       margin-top: 5px;
     }
-    
+
     .camera-btn {
       padding: 12px 24px;
       background: linear-gradient(to right, var(--primary-green), var(--secondary-green));
@@ -226,12 +226,12 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .camera-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 12px rgba(46, 125, 50, 0.4);
     }
-    
+
     .disease-result {
       background-color: var(--card-bg);
       border-radius: 15px;
@@ -240,52 +240,52 @@
       margin-top: 30px;
       animation: fadeIn 0.5s ease-in;
     }
-    
+
     .result-content {
       display: grid;
       grid-template-columns: 1fr 2fr;
       gap: 30px;
       margin-top: 20px;
     }
-    
+
     .image-preview {
       text-align: center;
     }
-    
+
     .image-preview img {
       max-width: 100%;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    
+
     .result-details {
       display: flex;
       flex-direction: column;
       gap: 15px;
     }
-    
+
     .result-item {
       display: flex;
       flex-direction: column;
     }
-    
+
     .result-item .label {
       font-weight: 600;
       color: var(--primary-green);
       margin-bottom: 5px;
     }
-    
+
     .result-item .value {
       color: var(--text-dark);
     }
-    
+
     .action-buttons {
       display: flex;
       gap: 15px;
       margin-top: 25px;
       justify-content: center;
     }
-    
+
     .btn {
       padding: 12px 24px;
       border: none;
@@ -294,29 +294,29 @@
       font-weight: 600;
       transition: var(--transition);
     }
-    
+
     .btn.primary {
       background: linear-gradient(to right, var(--primary-green), var(--secondary-green));
       color: white;
     }
-    
+
     .btn.secondary {
       background: linear-gradient(to right, #9e9e9e, #757575);
       color: white;
     }
-    
+
     .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     }
-    
+
     .voice-input-container {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-top: 15px;
     }
-    
+
     .voice-input-btn {
       padding: 10px 20px;
       background: linear-gradient(to right, #2196F3, #21CBF3);
@@ -331,23 +331,23 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .voice-input-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 12px rgba(33, 150, 243, 0.4);
     }
-    
+
     .voice-input-btn.listening {
       background: linear-gradient(to right, #f44336, #ff9800);
       animation: pulse 1.5s infinite;
     }
-    
+
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
-    
+
     .voice-input-text {
       flex: 1;
       padding: 10px 15px;
@@ -357,28 +357,28 @@
       outline: none;
       transition: var(--transition);
     }
-    
+
     .voice-input-text:focus {
       border-color: var(--secondary-green);
       box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     }
-    
+
     .history-section {
       margin-top: 40px;
     }
-    
+
     .history-section h3 {
       color: var(--primary-green);
       margin-bottom: 20px;
       font-size: 1.4rem;
     }
-    
+
     .history-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
     }
-    
+
     .history-item {
       border: 1px solid var(--border-color);
       border-radius: 10px;
@@ -386,46 +386,46 @@
       transition: var(--transition);
       cursor: pointer;
     }
-    
+
     .history-item:hover {
       transform: translateY(-3px);
       box-shadow: 0 6px 12px rgba(0,0,0,0.1);
       border-color: var(--accent-green);
     }
-    
+
     .history-item .date {
       font-size: 0.9rem;
       color: var(--text-light);
       margin-bottom: 8px;
     }
-    
+
     .history-item .disease-name {
       font-weight: 600;
       color: var(--primary-green);
     }
-    
+
     .history-item .confidence {
       font-size: 0.9rem;
       color: var(--text-light);
     }
-    
+
     .empty-state {
       text-align: center;
       padding: 40px;
       color: var(--text-light);
     }
-    
+
     .empty-state i {
       font-size: 3rem;
       margin-bottom: 15px;
       opacity: 0.5;
     }
-    
+
     .loading-state {
       text-align: center;
       padding: 20px;
     }
-    
+
     .loading-state .spinner {
       border: 4px solid rgba(0, 0, 0, 0.1);
       border-left-color: var(--primary-green);
@@ -435,15 +435,84 @@
       animation: spin 1s linear infinite;
       margin: 0 auto 15px;
     }
-    
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ===== 上传框右侧放拍照按钮 ===== */
+.upload-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.upload-area {
+  max-width: 560px;
+  height: 190px;
+}
+
+.camera-btn {
+  height: 52px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== 语音按钮放到输入框右侧，类似微信输入框 ===== */
+.voice-input-container {
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  display: block;
+  margin-top: 0;
+}
+
+.voice-input-text {
+  width: 100%;
+  height: 46px;
+  padding: 10px 54px 10px 18px;
+  border-radius: 24px;
+}
+
+.voice-input-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  gap: 0;
+}
+
+.voice-input-btn:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.voice-input-btn .voice-btn-text {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .upload-row {
+    flex-direction: column;
+  }
+
+  .camera-btn {
+    width: 100%;
+    max-width: 560px;
+    justify-content: center;
+  }
+}
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
@@ -459,26 +528,32 @@
     <div class="disease-container">
       <h2 class="module-title">慧眼识病</h2>
       <p class="module-description">上传农作物图片，智能识别病虫害，获取专业防治建议</p>
-      
+
       <div class="disease-upload">
-        <div class="upload-area" id="uploadArea">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>点击或拖拽图片到此处上传</p>
-          <p class="small-text">支持 JPG, PNG, JPEG 格式</p>
-          <input type="file" id="diseaseImage" accept="image/*" style="display: none;">
-        </div>
-        <button class="camera-btn" id="cameraBtn"><i class="fas fa-camera"></i> 拍照识别</button>
-        
-        <!-- 语音输入区域 -->
-        <div class="voice-input-container">
-          <button class="voice-input-btn" id="voiceInputBtn">
-            <i class="fas fa-microphone"></i>
-            语音输入
-          </button>
-          <input type="text" class="voice-input-text" id="voiceInputText" placeholder="点击麦克风按钮开始语音输入...">
-        </div>
-      </div>
-      
+
+  <div class="upload-row">
+    <div class="upload-area" id="uploadArea">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>点击或拖拽图片到此处上传</p>
+      <p class="small-text">支持 JPG, PNG, JPEG 格式</p>
+      <input type="file" id="diseaseImage" accept="image/*" style="display: none;">
+    </div>
+
+    <button class="camera-btn" id="cameraBtn">
+      <i class="fas fa-camera"></i> 拍照识别
+    </button>
+  </div>
+
+  <div class="voice-input-container">
+    <input type="text" class="voice-input-text" id="voiceInputText" placeholder="请输入语音备注，或点击右侧麦克风...">
+    <button class="voice-input-btn" id="voiceInputBtn" title="语音输入">
+      <i class="fas fa-microphone"></i>
+      <span class="voice-btn-text">语音输入</span>
+    </button>
+  </div>
+
+</div>
+
       <div class="disease-result" id="diseaseResult" style="display: none;">
         <h3>识别结果</h3>
         <div class="result-content">
@@ -509,7 +584,7 @@
           <button class="btn" id="newDetection">重新检测</button>
         </div>
       </div>
-      
+
       <div class="history-section">
         <h3>历史记录</h3>
         <div class="history-list" id="historyList">
@@ -538,21 +613,27 @@
       const newDetectionBtn = document.getElementById('newDetection');
       const voiceInputBtn = document.getElementById('voiceInputBtn');
       const voiceInputText = document.getElementById('voiceInputText');
-      
+      const cameraBtn = document.getElementById('cameraBtn');
+
+cameraBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  fileInput.click();
+});
+
       // 初始化语音输入管理器
       const voiceInputManager = new VoiceInputManager();
-      
+
       // 点击上传区域触发文件选择
       uploadArea.addEventListener('click', () => {
         fileInput.click();
       });
-      
+
       // 文件选择后处理
       fileInput.addEventListener('change', function(e) {
         if (this.files && this.files[0]) {
           const file = this.files[0];
           const reader = new FileReader();
-          
+
           reader.onload = function(e) {
             // 显示预览图片
             previewImage.src = e.target.result;
@@ -561,39 +642,39 @@
             // 模拟识别结果
             simulateDiseaseDetection();
           }
-          
+
           reader.readAsDataURL(file);
-          
+
           // 显示加载状态
           showLoadingState();
         }
       });
-      
+
       // 拖拽上传功能
       uploadArea.addEventListener('dragover', function(e) {
         e.preventDefault();
         this.style.borderColor = '#4caf50';
         this.style.backgroundColor = '#e8f5e9';
       });
-      
+
       uploadArea.addEventListener('dragleave', function(e) {
         e.preventDefault();
         this.style.borderColor = '#e0e0e0';
         this.style.backgroundColor = '#fafafa';
       });
-      
+
       uploadArea.addEventListener('drop', function(e) {
         e.preventDefault();
         this.style.borderColor = '#e0e0e0';
         this.style.backgroundColor = '#fafafa';
-        
+
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
           fileInput.files = e.dataTransfer.files;
           const event = new Event('change');
           fileInput.dispatchEvent(event);
         }
       });
-      
+
       // 语音输入按钮功能
       voiceInputBtn.addEventListener('click', () => {
         if (voiceInputManager.isListening) {
@@ -604,7 +685,7 @@
             alert('您的浏览器不支持语音识别功能，请使用Chrome浏览器或确保已启用语音识别权限。');
             return;
           }
-          
+
           // 开始语音识别
           voiceInputManager.startListening(
             (transcript) => {
@@ -623,25 +704,25 @@
               voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i> 语音输入';
             }
           );
-          
+
           // 更新按钮状态
           voiceInputBtn.classList.add('listening');
           voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i> 停止识别';
         }
       });
-      
+
       // 重新检测按钮
       newDetectionBtn.addEventListener('click', function() {
         fileInput.value = '';
         diseaseResult.style.display = 'none';
         voiceInputText.value = ''; // 清空语音输入内容
       });
-      
+
       // 保存记录按钮
       saveResultBtn.addEventListener('click', function() {
         saveDetectionResult();
       });
-      
+
       // 显示加载状态
       function showLoadingState() {
         diseaseName.textContent = '识别中...';
@@ -650,16 +731,16 @@
         solutions.innerHTML = '<p>系统正在处理您的图片，这可能需要几秒钟时间。</p>';
       }
     });
-    
+
     // 模拟病虫害识别过程
     function simulateDiseaseDetection() {
       const diseaseResult = document.getElementById('diseaseResult');
       // 显示结果区域
       diseaseResult.style.display = 'block';
-      
+
       // 显示加载状态
       showLoadingState();
-      
+
       // 模拟API调用延迟
       setTimeout(() => {
         // 模拟识别结果（实际应用中这里会是AI模型的输出）
@@ -701,47 +782,47 @@
             solutions: "合理施肥，增强植株抗病性；及时喷施多菌灵、代森锰锌等药剂防治。"
           }
         ];
-        
+
         // 随机选择一个病害作为识别结果
         const randomIndex = Math.floor(Math.random() * diseases.length);
         const result = diseases[randomIndex];
-        
+
         // 显示识别结果
         displayDiseaseResult(result);
-        
+
         // 添加到历史记录（用于页面显示）
         addToHistory(result);
-        
+
         // 保存到数据库
         saveHistoryToDatabase(result);
       }, 2000); // 模拟2秒的处理时间
     }
-    
+
     // 显示加载状态
     function showLoadingState() {
       const diseaseName = document.getElementById('diseaseName');
       const confidence = document.getElementById('confidence');
       const symptoms = document.getElementById('symptoms');
       const solutions = document.getElementById('solutions');
-      
+
       // 显示加载文本
       diseaseName.textContent = '正在识别中...';
       confidence.textContent = '--';
       symptoms.textContent = '系统正在分析您的图片，请稍候...';
       solutions.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>识别过程中...</p></div>';
     }
-    
+
     // 添加到历史记录
         function addToHistory(result) {
             const historyList = document.getElementById('historyList');
             const voiceInputText = document.getElementById('voiceInputText');
             const voiceInputValue = voiceInputText.value;
-            
+
             // 移除空状态提示
             if (historyList.querySelector('.empty-state')) {
                 historyList.innerHTML = '';
             }
-            
+
             // 创建历史记录项
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
@@ -751,12 +832,12 @@
                 <div class="confidence">置信度: ${(result.confidence * 100).toFixed(1)}%</div>
                 ${voiceInputValue ? `<div class="voice-input">语音备注: ${voiceInputValue}</div>` : ''}
             `;
-            
+
             // 添加点击事件，重新显示该记录
             historyItem.addEventListener('click', function() {
                 displayDiseaseResult(result);
             });
-            
+
             // 将新记录添加到顶部
             historyList.insertBefore(historyItem, historyList.firstChild);
         }
@@ -768,7 +849,7 @@
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         }
-        
+
         // 保存历史记录到数据库
         async function saveHistoryToDatabase(diseaseData) {
             try {
@@ -777,7 +858,7 @@
                     console.error('用户未登录');
                     return;
                 }
-                
+
                 // 获取语音输入内容
                 const voiceInputText = document.getElementById('voiceInputText');
                 const voiceInputValue = voiceInputText ? voiceInputText.value : '';
@@ -845,7 +926,7 @@
                         <div class="confidence">置信度: ${(parseFloat(record.confidence) * 100).toFixed(1)}%</div>
                         ${record.voice_input ? `<div class="voice-input">语音备注: ${record.voice_input}</div>` : ''}
                     `;
-                    
+
                     // 添加点击事件，重新显示识别结果
                     historyItem.addEventListener('click', () => {
                         displayDiseaseResult({
@@ -855,7 +936,7 @@
                             solutions: record.solutions
                         });
                     });
-                    
+
                     historyList.appendChild(historyItem);
                 });
             } catch (error) {
@@ -867,7 +948,7 @@
         window.addEventListener('load', function() {
             loadHistoryFromDatabase();
         });
-    
+
     // 显示病害识别结果
     function displayDiseaseResult(result) {
       const diseaseResult = document.getElementById('diseaseResult');
@@ -877,13 +958,13 @@
       const symptoms = document.getElementById('symptoms');
       const solutions = document.getElementById('solutions');
       const voiceInputText = document.getElementById('voiceInputText');
-      
+
       // 更新结果区域
       diseaseName.textContent = result.name;
       confidence.textContent = `${(result.confidence * 100).toFixed(1)}%`;
       symptoms.textContent = result.symptoms;
       solutions.innerHTML = result.solutions.split('；').map(s => `<p>${s}</p>`).join('');
-      
+
       // 确保预览图显示上传的图片
       const fileInput = document.getElementById('diseaseImage');
       if (fileInput.files && fileInput.files[0]) {
@@ -893,21 +974,21 @@
         };
         reader.readAsDataURL(fileInput.files[0]);
       }
-      
+
       // 显示结果区域
       diseaseResult.style.display = 'block';
     }
-    
+
     // 保存检测结果
     function saveDetectionResult() {
       const diseaseName = document.getElementById('diseaseName').textContent;
       const confidence = document.getElementById('confidence').textContent;
-      
+
       if (diseaseName === '--' || diseaseName === '识别中...') {
         alert('请先进行病害识别再保存记录');
         return;
       }
-      
+
       // 创建下载内容
       const content = `病害识别报告
 ================
@@ -924,7 +1005,7 @@ ${document.getElementById('solutions').textContent}
 ---
 本报告由智禾慧研慧眼识病模块生成
 `;
-      
+
       // 创建下载链接
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);

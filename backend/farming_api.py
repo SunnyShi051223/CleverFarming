@@ -288,20 +288,28 @@ def get_task_detail(current_user_id, task_id):
 @farming_bp.route('/api/tasks/<int:task_id>/status', methods=['PUT'])
 @token_required
 def update_task_status(current_user_id, task_id):
-    """更新任务状态"""
+    """更新任务状态（支持标记完成或未完成）"""
     try:
-        # 简单实现：目前只支持标记为完成
+        data = request.get_json()
+        new_status = 'completed' if data and data.get('status') == 'completed' else 'pending'
+
         connection = get_db_connection()
         with connection.cursor() as cursor:
             from utils import get_beijing_time
             now = get_beijing_time()
-            sql = "UPDATE daily_tasks SET status = 'completed', completed_at = %s WHERE id = %s AND user_id = %s"
-            cursor.execute(sql, (now, task_id, current_user_id))
+
+            if new_status == 'completed':
+                sql = "UPDATE daily_tasks SET status = 'completed', completed_at = %s WHERE id = %s AND user_id = %s"
+                cursor.execute(sql, (now, task_id, current_user_id))
+            else:
+                sql = "UPDATE daily_tasks SET status = 'pending', completed_at = NULL WHERE id = %s AND user_id = %s"
+                cursor.execute(sql, (task_id, current_user_id))
+
             connection.commit()
-            
+
             if cursor.rowcount == 0:
                 return jsonify({'success': False, 'message': '更新失败'}), 400
-            
+
             return jsonify({'success': True, 'message': '状态更新成功'}), 200
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
